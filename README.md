@@ -1,6 +1,6 @@
 This is a simple react app
 
-#To Start App
+#To Setup the App
 
 First install dependencies using cmd 
 npm install
