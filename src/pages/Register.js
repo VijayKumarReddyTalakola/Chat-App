@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import pic from "../images/pic.jpg";
+import avatar from "../images/addAvatar.png";
 import { createUserWithEmailAndPassword , updateProfile } from "firebase/auth";
 import { auth ,storage, db } from '../firebase'
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -13,9 +13,12 @@ const [email,setEmail] = useState("");
 const [password,setPassword] = useState("");
 const [file,setFile] = useState("");
 const [err,setErr] = useState(false);
+const [loading, setLoading] = useState(false);
+
 const navigate = useNavigate();
 
 const handleSubmit = async(e)=>{
+  setLoading(true);
   e.preventDefault();
 
   try{
@@ -23,8 +26,10 @@ const handleSubmit = async(e)=>{
     const storageRef = ref(storage, displayName);
     const uploadTask = uploadBytesResumable(storageRef, file);
     uploadTask.on(
-      (error) => {
+      (err) => {
           setErr(true);
+          setLoading(true);
+          console.log(err)
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then(async(downloadURL) => {
@@ -45,6 +50,7 @@ const handleSubmit = async(e)=>{
     );
   }catch(err){
     setErr(true);
+    setLoading(true)
   }
 }
 
@@ -75,17 +81,17 @@ const handleSubmit = async(e)=>{
           </div>
           <div className="mt-4">
             <label className=" flex justify-center font-bold cursor-pointer mt-7" htmlFor="avatar">
-              <img src={pic} alt=""  className="w-7 h-7 rounded-t "/>
-              + Add your Avatar 
+              <img src={avatar} alt=""  className="w-7 h-7 rounded-t "/>
+              {" "}Add your Avatar 
             </label>
             <input onChange={(e)=>setFile(e.target.files[0])} type="file" id="avatar" className="invisible" required/>
           </div>
           <div className="mt-0">
-            <button type="submit" className="bg-blue-500 text-white w-full py-2 rounded-md hover:bg-blue-500 focus:outline-none focus:bg-blue-500">
+            <button disabled={loading} type="submit" className="bg-blue-500 text-white w-full py-2 rounded-md hover:bg-blue-500 focus:outline-none focus:bg-blue-500">
               Register
             </button>
           </div>
-          {err && <span>Something went wrong!</span>}
+          {err  && <span className="mt-2 text-center">Something went wrong!</span>} 
         <Link to="/login" className=" flex items-center justify-center mt-3">You have an account ? Login</Link>
         </form>
       </div>
