@@ -55,7 +55,7 @@ const handleSubmit = async(e)=>{
 }
 
   return (
-    <div id="register" className="w-screen flex flex-col items-center justify-center min-h-screen bg-blue-400 overflow-x-hidden">
+    <div id="register" className="w-screen flex flex-col items-center justify-center min-h-screen bg-shadyblue overflow-x-hidden">
       <div className="w-full max-w-xs sm:max-w-sm ">
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg px-8 pt-6 pb-8 mb-4">
           <h2 className="text-blueTheme text-center text-2xl font-bold">
@@ -87,11 +87,11 @@ const handleSubmit = async(e)=>{
             <input onChange={(e)=>setFile(e.target.files[0])} type="file" id="avatar" className="invisible" required/>
           </div>
           <div className="mt-0">
-            <button disabled={loading} type="submit" className="bg-blue-500 text-white w-full py-2 rounded-md hover:bg-blue-500 focus:outline-none focus:bg-blue-500">
+            <button disabled={loading} type="submit" className="bg-shadyblue text-white w-full py-2 rounded-md hover:bg-darkblue focus:outline-none focus:bg-blue-500">
               Register
             </button>
           </div>
-          {err  && <span className="mt-2 text-center">Something went wrong!</span>} 
+          {err  && <span className="mt-2 text-center text-black">Something went wrong!</span>} 
         <Link to="/login" className=" flex items-center justify-center mt-3">You have an account ? Login</Link>
         </form>
       </div>
