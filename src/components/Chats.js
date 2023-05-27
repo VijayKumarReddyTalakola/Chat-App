@@ -43,6 +43,37 @@ const Chats = () => {
       return formattedDate;
     }
   };
+  
+  const renderLastMessage = (lastMessage) => {
+    if(lastMessage){
+      console.log(lastMessage)
+    if (lastMessage.text && !lastMessage.img) {
+      return <p className="text-gray-300">{truncateMessage(lastMessage.text, 15)}</p>;
+    } else if (lastMessage.img && !lastMessage.text) {
+      return (
+        <div className="flex items-center">
+          <HiOutlinePhotograph className="bg-transparent text-white" />
+          <p className="text-gray-300 ml-1">Image</p>
+        </div>
+      );
+    } else if (lastMessage.img && lastMessage.text) {
+      return (
+        <div className="flex items-center">
+          <HiOutlinePhotograph className="bg-transparent text-white" />
+          <p className="text-gray-300 ml-1">{truncateMessage(lastMessage.text, 15)}</p>
+        </div>
+      );
+    }
+    }
+    return null;
+  };
+
+  const truncateMessage = (message, maxLength) => {
+    if (message.length <= maxLength) {
+      return message;
+    }
+    return message.substring(0, maxLength) + '...';
+  };
 
   return (
     <ul className="w-full flex flex-col justify-start items-start relative h-full ">
@@ -55,15 +86,7 @@ const Chats = () => {
             <img src={chat[1].userInfo.photoURL} alt="Vijay's profile" className="w-12 h-12 mr-4 rounded-full cursor-pointer"/>
             <div className="flex flex-col">
               <span className="font-bold text-white">{chat[1].userInfo.displayName}</span>
-              {
-                chat[1].lastMessage?.text ? <p className="text-gray-300">{chat[1].lastMessage?.text} </p> 
-                : (chat[1].lastMessage?.img ? (
-                <div className="flex flex-row justify-between items-center">
-                    <HiOutlinePhotograph className="bg-transparent text-white"/>
-                    <p className="text-gray-300 ml-1">Image </p> 
-                </div>
-                ) : <p>{""}</p>)
-              }
+                {renderLastMessage(chat[1].lastMessage)}
             </div>
           </div> 
           <div className="flex flex-row justify-end items-end">
@@ -74,7 +97,6 @@ const Chats = () => {
     }
     </ul>
   );
-};
-
+}
 export default Chats;
 
