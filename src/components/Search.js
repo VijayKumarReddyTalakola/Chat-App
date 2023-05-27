@@ -7,18 +7,17 @@ const Search = () => {
   const [userName,setUserName] = useState("");
   const [user,setUser] = useState(null);
   const [err,setErr] = useState(false)
- const {currentUser} = useContext(AuthContext)
+  const {currentUser} = useContext(AuthContext)
   const handleSearch = async ()=>{
-        const q = query(collection(db,"users"),where("displayName","==",userName));
-        try{
-          const querySnapshot = await getDocs(q);
-          querySnapshot.forEach((doc)=>{
-            setUser(doc.data())
-          })
-
-        }catch(err){
-          setErr(true);
-        }
+    const q = query(collection(db,"users"),where("displayName","==",userName));
+    try{
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc)=>{
+        setUser(doc.data())
+      })
+    }catch(err){
+      setErr(true);
+    }
   }
   const handleKey = (e) =>{
     e.code === "Enter" && handleSearch()
@@ -57,7 +56,7 @@ const Search = () => {
         })
       }
     } catch (err) {
-      setErr(true)
+      setErr(err.message)
     }
     setUser(null)
     setUserName("")

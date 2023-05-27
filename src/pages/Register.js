@@ -13,12 +13,10 @@ const [email,setEmail] = useState("");
 const [password,setPassword] = useState("");
 const [file,setFile] = useState("");
 const [err,setErr] = useState(false);
-const [loading, setLoading] = useState(false);
 
 const navigate = useNavigate();
 
 const handleSubmit = async(e)=>{
-  setLoading(true);
   e.preventDefault();
 
   try{
@@ -27,9 +25,8 @@ const handleSubmit = async(e)=>{
     const uploadTask = uploadBytesResumable(storageRef, file);
     uploadTask.on(
       (err) => {
-          setErr(true);
-          setLoading(true);
-          console.log(err)
+          console.log(err.message);
+          setErr(`Failed to upload avatar`);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then(async(downloadURL) => {
@@ -49,8 +46,8 @@ const handleSubmit = async(e)=>{
       }
     );
   }catch(err){
-    setErr(true);
-    setLoading(true)
+    console.log(err.message);
+    setErr(`User Registration Failed!`);
   }
 }
 
@@ -80,23 +77,26 @@ const handleSubmit = async(e)=>{
             <input onChange={(e)=>setPassword(e.target.value)} type="password" id="password" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your password" required/>
           </div>
           <div className="mt-4">
-            <label className=" flex justify-center font-bold cursor-pointer mt-7" htmlFor="avatar">
-              <img src={avatar} alt=""  className="w-7 h-7 rounded-t "/>
-              {" "}Add your Avatar 
+            <label className=" flex justify-center font-medium cursor-pointer mt-7" htmlFor="avatar">
+              <img src={avatar} alt="add avatar"  className="w-7 h-7 rounded-t "/>
+                Add your Avatar 
             </label>
             <input onChange={(e)=>setFile(e.target.files[0])} type="file" id="avatar" className="invisible" required/>
           </div>
           <div className="mt-0">
-            <button disabled={loading} type="submit" className="bg-shadyblue text-white w-full py-2 rounded-md hover:bg-darkblue focus:outline-none focus:bg-blue-500">
+            <button type="submit" className="bg-shadyblue text-white w-full py-2 rounded-md hover:bg-darkblue focus:outline-none ">
               Register
             </button>
           </div>
-          {err  && <span className="mt-2 text-center text-black">Something went wrong!</span>} 
-        <Link to="/login" className=" flex items-center justify-center mt-3">You have an account ? Login</Link>
+          {err && <span className="mt-2 flex justify-center items-center text-center text-red-500">{err}</span>}
+          <div className=" mt-3 flex justify-center items-center text-center">
+            <p>You have an account ?</p>
+            <Link to="/login" className="text-blue-500 ml-2 hover:text-purple-700">Login</Link>
+          </div>
         </form>
       </div>
     </div>
-  );
+  ); 
 };
 
 export default Register;

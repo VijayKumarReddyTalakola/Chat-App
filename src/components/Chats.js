@@ -46,7 +46,6 @@ const Chats = () => {
   
   const renderLastMessage = (lastMessage) => {
     if(lastMessage){
-      console.log(lastMessage)
     if (lastMessage.text && !lastMessage.img) {
       return <p className="text-gray-300">{truncateMessage(lastMessage.text, 15)}</p>;
     } else if (lastMessage.img && !lastMessage.text) {
