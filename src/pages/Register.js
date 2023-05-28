@@ -46,8 +46,19 @@ const handleSubmit = async(e)=>{
       }
     );
   }catch(err){
+      var errCode = err.code;
+      if (errCode === "auth/invalid-email") {
+        setErr(`Enter a valid email!`);
+      }
+      else if (errCode === "auth/email-already-in-use") {
+        setErr(`Email already exists!`);
+      } 
+      else if (errCode === "auth/weak-password") {
+        setErr(`Password should be at least 6 characters`);
+      } else {
+        setErr(`Please fill all details!`);
+      }
     console.log(err.message);
-    setErr(`User Registration Failed!`);
   }
 }
 

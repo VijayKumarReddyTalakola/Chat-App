@@ -17,8 +17,14 @@ const handleSubmit = async(e)=>{
     await signInWithEmailAndPassword(auth,email,password);
     navigate("/")
   } catch(err){
-    console.log((err.message));
+    var errCode = err.code;
+  if (errCode === "auth/user-not-found") {
+    setErr(`User not found!`);
+  } 
+  else if (errCode === "auth/wrong-password") {
     setErr(`Invalid credentials!`);
+  }
+  console.log((err.message));
   }
 }
 
