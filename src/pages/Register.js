@@ -18,6 +18,10 @@ const navigate = useNavigate();
 
 const handleSubmit = async(e)=>{
   e.preventDefault();
+    if (!file) {
+      setErr("Please select an avatar.");
+      return;
+    }
 
   try{
     const res = await createUserWithEmailAndPassword(auth, email, password);
@@ -55,8 +59,6 @@ const handleSubmit = async(e)=>{
       } 
       else if (errCode === "auth/weak-password") {
         setErr(`Password should be at least 6 characters`);
-      } else {
-        setErr(`Please fill all details!`);
       }
     console.log(err.message);
   }
@@ -92,7 +94,7 @@ const handleSubmit = async(e)=>{
               <img src={avatar} alt="add avatar"  className="w-7 h-7 rounded-t "/>
                 Add your Avatar 
             </label>
-            <input onChange={(e)=>setFile(e.target.files[0])} type="file" id="avatar" className="invisible" required/>
+            <input onChange={(e)=>setFile(e.target.files[0])} type="file" id="avatar" className="invisible" />
           </div>
           <div className="mt-0">
             <button type="submit" className="bg-shadyblue text-white w-full py-2 rounded-md hover:bg-darkblue focus:outline-none ">

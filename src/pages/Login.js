@@ -18,10 +18,13 @@ const handleSubmit = async(e)=>{
     navigate("/")
   } catch(err){
     var errCode = err.code;
-  if (errCode === "auth/user-not-found") {
+  if (errCode === "auth/user-disabled") {
+    setErr(`User account disabled!`);
+  } else if (errCode === "auth/invalid-email") {
+    setErr(`Enter a valid email!`);
+  } else if (errCode === "auth/user-not-found") {
     setErr(`User not found!`);
-  } 
-  else if (errCode === "auth/wrong-password") {
+  } else if (errCode === "auth/wrong-password") {
     setErr(`Invalid credentials!`);
   }
   console.log((err.message));

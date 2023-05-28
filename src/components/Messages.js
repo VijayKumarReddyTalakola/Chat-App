@@ -57,7 +57,7 @@ const Messages = () => {
 
   return (
     <div className="flex flex-col bg-shadywhite w-full p-2 overflow-y-scroll">
-      {Object.entries(groupedMessages).map(([date, messages]) => (
+      {groupedMessages && Object.entries(groupedMessages).map(([date, messages]) => (
         <div key={date}>
           <h2 className="text-gray-700 text-center ">
             {displayDate(new Date(date))}

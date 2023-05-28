@@ -77,7 +77,7 @@ const Chats = () => {
   return (
     <ul className="w-full flex flex-col justify-start items-start relative h-full ">
     {
-       Object.entries(chats)?.sort((a,b)=>b[1].date - a[1].date).map(chat =>(
+        chats && Object.entries(chats)?.sort((a,b)=>b[1].date - a[1].date).map(chat =>(
         <li 
         onClick={()=>handleSelect(chat[1].userInfo)} 
         key={chat[0]} className="flex items-center justify-between  p-3 hover:bg-regal-blue rounded-md w-full ">
