@@ -1,12 +1,32 @@
-import React, { useContext, useRef, useEffect } from "react";
+import React, { useContext, useRef, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { format } from "date-fns";
+import { MdDelete } from "react-icons/md";
+// import { doc, onSnapshot } from "firebase/firestore";
+// import { db } from "../firebase";
 
-const Message = ({ message }) => {
+const Message = ({ message  }) => {
+  // const [messages, setMessages] = useState([]);
+  const [selected, setselected] = useState(false);
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
   const ref = useRef();
+
+    // useEffect(() => {
+    //   const unsub = onSnapshot(doc(db, "chats", data.chatId), (doc) => {
+    //     if (doc.exists()) {
+    //       const chatData = doc.data();
+    //       if (chatData.messages) {
+    //         setMessages(chatData.messages);
+    //       } else {
+    //         setMessages([]);
+    //       }
+    //     }
+    //   });
+
+    //   return () => unsub();
+    // }, [data.chatId]);
 
   useEffect(() => {
     ref.current?.scrollIntoView({ behaviour: "smooth" });
@@ -21,15 +41,33 @@ const Message = ({ message }) => {
     document.getElementById(`${message.id}`)?.requestFullscreen()
   }
 
+  // const deleteMessage = async (message)=>{
+  //   console.log(message)
+  //   console.log(message.text)
+  //   const found = messages.find((msg) => {
+  //      return msg.id === message.id;
+  //   });
+  //   if(found){
+  //   await updateDoc(doc(db, "chats", data.chatId), {
+  //       [message] :{deleted:true}
+  //   });
+  //   }
+  // }
+
   return (
     <>
       {message.senderId === currentUser.uid ? (
-        <div ref={ref} className="flex flex-row-reverse w-full">
+        <div ref={ref} className="flex flex-row-reverse w-full ">
           <img src={currentUser?.photoURL} alt="User profile" className="w-10 h-10 rounded-full"/>
           {message.text && !message.img && (
-            <div className="flex flex-col my-2 justify-items-end max-w-[50%]">
-              <p className="flex justify-start bg-blue-400 ml-auto mr-2 text-white px-3 py-1 rounded-b-lg rounded-tr-none rounded-tl-lg">
+            <div className="flex flex-col my-2 justify-items-end max-w-[50%] hover:cursor-pointer">
+              <p onDoubleClick={()=>setselected(!selected)} className="flex justify-start bg-blue-400 ml-auto mr-2 text-white px-3 py-1 rounded-b-lg rounded-tr-none rounded-tl-lg">
+                <div className="flex justify-around items-center">
                 {message.text}
+                {selected && <MdDelete className=" text-white ml-3" o
+                // nClick={()=>deleteMessage(message)}
+                />}
+                </div>
               </p>
               <span className="flex text-xs justify-end my-1 text-gray-500 mr-2">
                 {getTimeFromTimestamp(message.date)}

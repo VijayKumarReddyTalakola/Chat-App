@@ -63,7 +63,9 @@ const Messages = () => {
             {displayDate(new Date(date))}
           </h2>
           {messages.map((message) => (
-            <Message message={message} key={message.id} />
+            <Message  message={message}  key={message.id}  
+            // deleteMessage={deleteMessage} 
+            />
           ))}
         </div>
       ))}

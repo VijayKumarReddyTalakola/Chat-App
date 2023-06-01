@@ -34,7 +34,8 @@ const Input = () => {
               text,
               senderId: currentUser.uid,
               date: Timestamp.now(),
-              img: downloadURL
+              img: downloadURL,
+              deleted:false
             })
           })
         })
@@ -45,7 +46,8 @@ const Input = () => {
           id: uuid(),
           text,
           senderId: currentUser.uid,
-          date: Timestamp.now()
+          date: Timestamp.now(),
+          deleted:false
         })
       })
     }
