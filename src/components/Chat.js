@@ -5,10 +5,14 @@ import more from "../images/more.png";
 import Messages from "./Messages";
 import Input from "./Input";
 import { ChatContext } from "../context/ChatContext";
-import {FiArrowLeft} from 'react-icons/fi'
+import { FiArrowLeft } from 'react-icons/fi'
 
 const Chat = () => {
-  const { data } = useContext(ChatContext);
+  const { data , dispatch } = useContext(ChatContext);
+
+  const removeUser = (user) =>{
+      dispatch({ type: "REMOVE_USER", payload: user });
+  }
 
   const openFullScreen = () => {
     document.getElementById("profile")?.requestFullscreen();
@@ -19,8 +23,8 @@ const Chat = () => {
       <div className="relative flex flex-col items-center min-h-screen w-full bg-shadywhite overflow-x-hidden sm:w-2/3 lg:w-3/4 h-full">
         <div className="flex justify-between items-center bg-shadyblue w-full px-4 py-3">
           <div className="flex items-center flex-row">
-            <FiArrowLeft className="w-7 h-7 text-gray-200 -ml-2 sm:hidden" />
-            <img src={data.user?.photoURL} id="profile" onClick={openFullScreen} alt="User profile" className="w-10 h-10 mr-3 rounded-full cursor-pointer"/>
+            <FiArrowLeft className="w-7 h-7 text-gray-200 -ml-2 sm:hidden" onClick={()=>removeUser(data?.user)} />
+            <img src={data.user?.photoURL} id="profile" onClick={openFullScreen} alt="User profile" className="w-10 h-10 mr-3  ml-2 rounded-full cursor-pointer"/>
             <span className="text-white font-bold text-2xl">{data.user?.displayName}</span>
           </div>
           <div className="flex items-center">
@@ -35,7 +39,7 @@ const Chat = () => {
         <Input />
       </div>
       ) : (
-       <div className="flex flex-col min-h-screen  p-4 w-full font-bold justify-center items-center text-center text-3xl bg-shadywhite overflow-x-hidden sm:w-2/3 lg:w-3/4 ">
+       <div className="hidden sm:flex flex-col min-h-screen p-4 w-full font-bold justify-center items-center text-center text-3xl bg-shadywhite overflow-x-hidden sm:w-2/3 lg:w-3/4 ">
          Welcome to VChat
          <div className="text-lg font-normal">
            Send and receive messages without having any external apps.

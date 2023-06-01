@@ -2,12 +2,14 @@ import React, { useContext, useState } from "react";
 import { doc,collection ,getDocs,getDoc,setDoc,query ,serverTimestamp,updateDoc,where } from "firebase/firestore";
 import { db } from "../firebase"; 
 import { AuthContext } from "../context/AuthContext";
+import { HiUserAdd } from "react-icons/hi";
 
 const Search = () => {
   const [userName,setUserName] = useState("");
   const [user,setUser] = useState(null);
   const [err,setErr] = useState(false)
   const {currentUser} = useContext(AuthContext)
+
   const handleSearch = async ()=>{
     const q = query(collection(db,"users"),where("displayName","==",userName));
     try{
@@ -31,7 +33,7 @@ const Search = () => {
   };
 
   const handleSelect = async (user) =>{
-    const combinedId = currentUser.uid > user.uid ? currentUser.uid + user.uid :  user.uid + currentUser.uid
+    const combinedId = currentUser.uid > user.uid ? currentUser.uid + user.uid : user.uid + currentUser.uid
     try {
       const res = await getDoc(doc(db,'chats',combinedId)) 
       if(!res.exists()){
@@ -77,16 +79,22 @@ const Search = () => {
           />
         </div>
         {err && (
-          <span className="flex flex-row justify-center w-full text-white p-2  text-center items-center sm:w-1/3 lg:w-1/4">
+          <span className="flex flex-row justify-center w-full text-white p-2  text-center items-center ">
             User not found !
           </span>
         )}
         {user && (
-          <div className="flex flex-col" onClick={()=>handleSelect(user)}>
-            <ul className="w-screen flex flex-col justify-start items-start relative  h-full m:w-1/3 lg:w-1/4">
-              <li className="flex items-center  mx-3 p-2 hover:bg-regal-blue rounded-md w-screen">
-                <img src={user.photoURL} alt="Vijay's profile" className="w-12 h-12 mr-4 rounded-full cursor-pointer"/>
-                 <span className="font-bold text-white">{user.displayName}</span>
+          <div className="flex flex-col" 
+          >
+            <ul className="w-full flex  justify-start items-start relative  h-full">
+              <li className="flex justify-between items-center p-2 hover:bg-regal-blue rounded-md w-full">
+                <div className="flex flex-row justify-center items-center">
+                  <img src={user.photoURL} alt="Vijay's profile" className="w-12 h-12 mr-4 rounded-full cursor-pointer"/>
+                  <span className="font-bold text-white">{user.displayName}</span>
+                </div>
+                <div className="flex justify-end items-center">
+                  <HiUserAdd className="text-white text-2xl"  onClick={()=>handleSelect(user)}  />
+                </div> 
               </li>
             </ul>
           </div>

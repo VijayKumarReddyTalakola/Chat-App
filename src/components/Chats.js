@@ -9,7 +9,8 @@ import { format, isToday, isYesterday } from "date-fns";
 const Chats = () => {
   const [chats, setChats] = useState([]);
   const {currentUser} = useContext(AuthContext)
-  const {dispatch} = useContext(ChatContext)
+  const { dispatch } = useContext(ChatContext);
+
   useEffect(() => {
     const getChats = ()=>{
       const unsub = onSnapshot(doc(db,'userChats',currentUser.uid),(doc)=>{
@@ -52,7 +53,7 @@ const Chats = () => {
       return (
         <div className="flex items-center">
           <HiOutlinePhotograph className="bg-transparent text-white" />
-          <p className="text-gray-300 ml-1">Image</p>
+          <p className="text-gray-300 ml-1">Photo</p>
         </div>
       );
     } else if (lastMessage.img && lastMessage.text) {
@@ -74,23 +75,24 @@ const Chats = () => {
     return message.substring(0, maxLength) + '...';
   };
 
-  return (
+  return ( 
     <ul className="w-full flex flex-col justify-start items-start relative h-full ">
     {
         chats && Object.entries(chats)?.sort((a,b)=>b[1].date - a[1].date).map(chat =>(
         <li 
         onClick={()=>handleSelect(chat[1].userInfo)} 
-        key={chat[0]} className="flex items-center justify-between  p-3 hover:bg-regal-blue rounded-md w-full ">
+        key={chat[0]} className="flex items-center justify-between  p-3 hover:bg-regal-blue hover:cursor-pointer rounded-md w-full ">
           <div className="flex flex-row justify-between">
-            <img src={chat[1].userInfo.photoURL} alt="Vijay's profile" className="w-12 h-12 mr-4 rounded-full cursor-pointer"/>
+            <img src={chat[1].userInfo.photoURL} alt="Vijay's profile" className="w-12 h-12 mr-4 rounded-full "/>
             <div className="flex flex-col">
               <span className="font-bold text-white">{chat[1].userInfo.displayName}</span>
                 {renderLastMessage(chat[1].lastMessage)}
             </div>
           </div> 
-          <div className="flex flex-row justify-end items-end">
-            <span className="text-gray-300">{getTimeOrDateFromTimestamp(chat[1].date)}</span>
-          </div>
+           {chat[1].lastMessage &&
+            <div className="flex flex-row justify-end items-end">
+              <span className="text-gray-300">{getTimeOrDateFromTimestamp(chat[1].date)}</span>
+            </div>} 
         </li>
       ))
     }

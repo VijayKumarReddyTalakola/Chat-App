@@ -14,7 +14,7 @@ const Navbar = () => {
         <h1 className="text-white font-medium text-2xl top-0 left-0 ml-0">VChat</h1>
       </div>
       <ul className="flex flex-row justify-center items-center">
-        <li><img src={currentUser.photoURL} onClick={openFullScreen} alt="User profile" id="dp" className="w-9 h-9 mx-3 rounded-full cursor-pointer sm:w-12 sm:h-12"/></li>
+        <li><img src={currentUser.photoURL} onClick={openFullScreen} alt="User profile" id="dp" className="w-9 h-9 mr-3 rounded-full cursor-pointer sm:w-10 sm:h-10"/></li>
         <li><span className="font-bold text-white mt-2 sm:text-2xL lg:text-2xl lg:font-normal">{currentUser.displayName}</span></li>
         <li><button onClick={()=>signOut(auth)} className="text-3xs text-white cursor-pointer  ml-4 sm:text-xs">Logout</button></li>
       </ul>
