@@ -32,7 +32,7 @@ const Search = () => {
     }
   };
 
-  const handleSelect = async (user) =>{
+  const addFriend = async (user) =>{
     const combinedId = currentUser.uid > user.uid ? currentUser.uid + user.uid : user.uid + currentUser.uid
     try {
       const res = await getDoc(doc(db,'chats',combinedId)) 
@@ -84,16 +84,15 @@ const Search = () => {
           </span>
         )}
         {user && (
-          <div className="flex flex-col" 
-          >
-            <ul className="w-full flex  justify-start items-start relative  h-full">
+          <div className="flex flex-col">
+            <ul className="w-full flex justify-start items-start relative h-full mt-2">
               <li className="flex justify-between items-center p-2 hover:bg-regal-blue rounded-md w-full">
                 <div className="flex flex-row justify-center items-center">
-                  <img src={user.photoURL} alt="Vijay's profile" className="w-12 h-12 mr-4 rounded-full cursor-pointer"/>
+                  <img src={user.photoURL} alt="Vijay's profile" className="w-12 h-12 mr-4 rounded-full"/>
                   <span className="font-bold text-white">{user.displayName}</span>
                 </div>
                 <div className="flex justify-end items-center">
-                  <HiUserAdd className="text-white text-2xl"  onClick={()=>handleSelect(user)}  />
+                  <HiUserAdd className="text-white text-2xl cursor-pointer" onClick={()=>addFriend(user)}  />
                 </div> 
               </li>
             </ul>

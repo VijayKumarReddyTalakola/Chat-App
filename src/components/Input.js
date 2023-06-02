@@ -1,11 +1,11 @@
 import React, { useContext ,useState } from "react";
-import attach from '../images/attach.png'
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { Timestamp, arrayUnion, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db, storage } from "../firebase";
 import {v4 as uuid} from 'uuid';
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import {ImAttachment} from 'react-icons/im'
 
 const Input = () => {
   const [text, setText] = useState("")
@@ -72,8 +72,8 @@ const Input = () => {
     <div className="flex flex-row absolute bottom-0 left-0 w-full bg-gray-50 mt-2 pl-2 lg:pl-4">
       <input type="text" onChange={e => setText(e.target.value)} placeholder="Type a message..." value={text} className="w-full outline-none my-4 bg-gray-50 text-gray-500"/>
       <input type="file" onChange={e => setImg(e.target.files[0])} id="fileupload" className="invisible w-1 h-1" />
-      <label htmlFor="fileupload">
-        <img src={attach}  alt="file/doc" className="w-12 h-12 my-1 mx-2 cursor-pointer "/>
+      <label htmlFor="fileupload"> 
+        <ImAttachment className="flex items-center w-5 h-5 text-gray-500 my-4 mx-2 cursor-pointer"/>
       </label>
       <button onClick={handleSend} className="ml-4 bg-blue-500 px-4 rounded-lg text-white my-2.5 sm:ml-5 mr-3">Send</button>
     </div>
