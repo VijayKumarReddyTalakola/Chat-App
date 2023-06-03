@@ -18,9 +18,7 @@ const handleSubmit = async(e)=>{
     navigate("/")
   } catch(err){
     var errCode = err.code;
-  if (errCode === "auth/user-disabled") {
-    setErr(`User account disabled!`);
-  } else if (errCode === "auth/invalid-email") {
+  if (errCode === "auth/invalid-email") {
     setErr(`Enter a valid email!`);
   } else if (errCode === "auth/user-not-found") {
     setErr(`User not found!`);

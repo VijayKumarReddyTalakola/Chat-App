@@ -75,7 +75,7 @@ const Input = () => {
       <label htmlFor="fileupload"> 
         <ImAttachment className="flex items-center w-5 h-5 text-gray-500 my-4 mx-2 cursor-pointer"/>
       </label>
-      <button onClick={handleSend} className="ml-4 bg-blue-500 px-4 rounded-lg text-white my-2.5 sm:ml-5 mr-3">Send</button>
+      <button onClick={()=> handleSend} className="ml-4 bg-blue-500 px-4 rounded-lg text-white my-2.5  hover:bg-blue-700 sm:ml-5 mr-3">Send</button>
     </div>
   );
 };
