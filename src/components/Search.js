@@ -92,7 +92,7 @@ const Search = () => {
                   <span className="font-bold text-white">{user.displayName}</span>
                 </div>
                 <div className="flex justify-end items-center">
-                  <HiUserAdd className="text-white text-2xl cursor-pointer" onClick={()=>addFriend(user)}  />
+                  <HiUserAdd className="text-white text-2xl mr-4 cursor-pointer" onClick={()=>addFriend(user)}  />
                 </div> 
               </li>
             </ul>
