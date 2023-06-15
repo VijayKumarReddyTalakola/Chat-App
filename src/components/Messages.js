@@ -57,18 +57,20 @@ const Messages = () => {
 
   return (
     <div className="flex flex-col bg-shadywhite w-full p-2 overflow-y-scroll">
-      {groupedMessages && Object.entries(groupedMessages).map(([date, messages]) => (
-        <div key={date}>
-          <h2 className="text-gray-700 text-center ">
-            {displayDate(new Date(date))}
-          </h2>
-          {messages.map((message) => (
-            <Message  message={message}  key={message.id}  
-            // deleteMessage={deleteMessage} 
-            />
-          ))}
-        </div>
-      ))}
+      {groupedMessages &&
+        Object.entries(groupedMessages).map(([date, messages]) => (
+          <div key={date}>
+            <h2 className="text-gray-700 text-center ">
+              {displayDate(new Date(date))}
+            </h2>
+            {messages.map((message) => (
+              <Message
+                message={message}
+                key={message.id}
+              />
+            ))}
+          </div>
+        ))}
     </div>
   );
 };

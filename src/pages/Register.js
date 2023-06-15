@@ -18,10 +18,10 @@ const navigate = useNavigate();
 
 const handleSubmit = async(e)=>{
   e.preventDefault();
-    if (!file) {
-      setErr("Please select an avatar.");
-      return;
-    }
+    // if (!file) {
+    //   setErr("Please select an avatar.");
+    //   return;
+    // }
 
   try{
     const res = await createUserWithEmailAndPassword(auth, email, password);
@@ -59,6 +59,8 @@ const handleSubmit = async(e)=>{
       } 
       else if (errCode === "auth/weak-password") {
         setErr(`Password should be at least 6 characters`);
+      }else if (errCode === "auth/network-request-failed") {
+        setErr(`Your Network is Slow!`);
       }
     console.log(err.message);
   }

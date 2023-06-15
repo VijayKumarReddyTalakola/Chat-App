@@ -8,10 +8,7 @@ const Home = () => {
   return (
     <div className="min-w-screen flex flex-row items-center flex-wrap justify-center min-h-screen bg-blue-400 overflow-x-hidden">
       {overlayVisible && (
-        <div
-          className="fixed inset-0 bg-black opacity-50 pointer-events-auto"
-          style={{ zIndex:100 }} >
-        </div>
+        <div className="fixed inset-0 bg-black opacity-50 pointer-events-auto z-40"></div>
       )}
       <Sidebar />
       <Chat setOverlayVisible={setOverlayVisible} />

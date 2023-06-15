@@ -1,68 +1,113 @@
 import React, { useContext, useState } from "react";
-import { doc,collection ,getDocs,getDoc,setDoc,query ,serverTimestamp,updateDoc,where } from "firebase/firestore";
-import { db } from "../firebase"; 
+import { doc, collection, getDocs, getDoc, setDoc, query, serverTimestamp, updateDoc } from "firebase/firestore";
+import { db } from "../firebase";
 import { AuthContext } from "../context/AuthContext";
 import { HiUserAdd } from "react-icons/hi";
+import { MdChat } from "react-icons/md";
+import { ChatContext } from "../context/ChatContext";
+import avatar from "../images/avatar.png";
+
 
 const Search = () => {
-  const [userName,setUserName] = useState("");
-  const [user,setUser] = useState(null);
-  const [err,setErr] = useState(false)
-  const {currentUser} = useContext(AuthContext)
+  const [userName, setUserName] = useState("");
+  const [users, setUsers] = useState([]);
+  const [err, setErr] = useState(false);
+  const [isFriend, setIsFriend] = useState(false);
+  const { currentUser } = useContext(AuthContext);
+  const { dispatch } = useContext(ChatContext);
 
-  const handleSearch = async ()=>{
-    const q = query(collection(db,"users"),where("displayName","==",userName));
-    try{
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc)=>{
-        setUser(doc.data())
-      })
-    }catch(err){
-      setErr(true);
-    }
-  }
-  const handleKey = (e) =>{
-    e.code === "Enter" && handleSearch()
-  }
-  const handleInputChange = (e) => {
-    setUserName(e.target.value);
-    if (e.target.value === "") {
+  const openChat = (user) => {
+    dispatch({ type: "CHANGE_USER", payload: user });
+    setUsers(null);
+    setUserName("");
+  };
+
+  const handleSearch = async () => {
+    const lowercaseName = userName.toLowerCase();
+    if (lowercaseName === "") {
+      setUsers(null);
       setErr(false);
-      setUser(null);
+      return;
+    }
+    const q = query(collection(db, "users"));
+    try {
+      const querySnapshot = await getDocs(q);
+      let matchedUsers = [];
+      querySnapshot.forEach((doc) => {
+        const displayName = doc.data().displayName.toLowerCase();
+        if (displayName.includes(lowercaseName)) {
+          matchedUsers.push(doc.data());
+        }
+      });
+      if (matchedUsers.length === 0) {
+        setErr(true);
+      } else {
+        setUsers(matchedUsers);
+        setErr(false);
+      }
+    } catch (err) {
+      setErr(true);
     }
   };
 
-  const addFriend = async (user) =>{
-    const combinedId = currentUser.uid > user.uid ? currentUser.uid + user.uid : user.uid + currentUser.uid
+  const handleInputChange = (e) => {
+    const inputUserName = e.target.value;
+    setUsers(null);
+    setErr(false);
+    setUserName(inputUserName);
+    if (inputUserName !== "") {
+      handleSearch();
+    }
+  };
+
+  const addFriend = async (user) => {
+    const combinedId = currentUser.uid > user.uid ? currentUser.uid + user.uid : user.uid + currentUser.uid;
     try {
-      const res = await getDoc(doc(db,'chats',combinedId)) 
-      if(!res.exists()){
-        await setDoc(doc(db, "chats", combinedId),{messages:[]});
+      const res = await getDoc(doc(db, "chats", combinedId));
+      if (!res.exists()) {
+        await setDoc(doc(db, "chats", combinedId), { messages: [] });
 
-        await updateDoc(doc(db,'userChats',currentUser.uid),{
-          [combinedId+".userInfo"] :{
+        await updateDoc(doc(db, "userChats", currentUser.uid), {
+          [combinedId + ".userInfo"]: {
             uid: user.uid,
-            displayName :user.displayName,
-            photoURL : user.photoURL
+            displayName: user.displayName,
+            photoURL: user.photoURL,
           },
-          [combinedId+".date"]:serverTimestamp()
-        })
+          [combinedId + ".date"]: serverTimestamp(),
+        });
 
-        await updateDoc(doc(db,'userChats',user.uid),{
-          [combinedId+".userInfo"] :{
+        await updateDoc(doc(db, "userChats", user.uid), {
+          [combinedId + ".userInfo"]: {
             uid: currentUser.uid,
-            displayName :currentUser.displayName,
-            photoURL : currentUser.photoURL
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL,
           },
-          [combinedId+".date"]:serverTimestamp()
-        })
+          [combinedId + ".date"]: serverTimestamp(),
+        });
       }
     } catch (err) {
-      setErr(err.message)
+      setErr(err.message);
     }
-    setUser(null)
-    setUserName("")
-  }
+    setUsers(null);
+    setUserName("");
+  };
+
+
+  const checkIsFriend = async (user) => {
+    const userChatsRef = doc(db, "userChats", currentUser.uid);
+    const userChatsDoc = await getDoc(userChatsRef);
+    if (userChatsDoc.exists()) {
+      const userChatsData = userChatsDoc.data();
+      const combinedId = currentUser.uid > user.uid ? currentUser.uid + user.uid : user.uid + currentUser.uid;
+      if (userChatsData[combinedId] && userChatsData[combinedId].userInfo.uid === user.uid) {
+        setIsFriend(true);
+      } else {
+        setIsFriend(false);
+      }
+    } else {
+      setIsFriend(false);
+    }
+  };
 
   return (
     <>
@@ -70,7 +115,6 @@ const Search = () => {
         <div className="w-full">
           <input
             type="search"
-            onKeyDown={handleKey}
             onChange={handleInputChange}
             className="relative m-0 block w-full min-w-0 flex-auto rounded border border-solid border-neutral-500 bg-transparent bg-clip-padding px-3 py-1.5 text-base font-normal text-gray-50  transition duration-300 ease-in-out focus:border-primary-300 focus:text-gray-50 shadow-te-primary outline-none dark:placeholder:text-gray-50 "
             name="exampleSearch"
@@ -83,26 +127,60 @@ const Search = () => {
             User not found !
           </span>
         )}
-        {user && (
-          <div className="flex flex-col">
-            <ul className="w-full flex justify-start items-start relative h-full mt-2">
-              <li className="flex justify-between items-center p-2 hover:bg-regal-blue rounded-md w-full">
-                <div className="flex flex-row justify-center items-center">
-                  <img src={user.photoURL} alt="Vijay's profile" className="w-12 h-12 mr-4 rounded-full"/>
-                  <span className="font-bold text-white">{user.displayName}</span>
-                </div>
-                <div className="flex justify-end items-center">
-                  <HiUserAdd className="text-white text-2xl mr-4 cursor-pointer" onClick={()=>addFriend(user)}  />
-                </div> 
-              </li>
-            </ul>
-          </div>
-        )}
+
+        { users &&
+          users.map((user) => {
+            checkIsFriend(user)
+            return (
+              <ul className="w-full flex justify-start items-start relative h-full mt-2" key={user.uid}>
+                { isFriend ? (
+                  // Display the chat icon for friend
+                  <li onClick={() => openChat(user)} className="flex items-center justify-between p-3 hover:bg-regal-blue hover:cursor-pointer rounded-md w-full md:p-2">
+                    <div className="flex flex-row justify-center items-center">
+                      <img
+                        src={user.photoURL}
+                        alt={avatar}
+                        className="w-12 h-12 mr-3 rounded-full md:mr-2 lg:mr-3"
+                      />
+                      <span className="font-bold text-white">
+                        {user.displayName}
+                      </span>
+                    </div>
+                    <div className="flex justify-end items-center">
+                      <MdChat
+                        className="text-white text-2xl mr-4 cursor-pointer"
+                      />
+                    </div>
+                  </li>
+                  ) : (
+                    // Display add friend icon for non-friend
+                    <li className="flex justify-between items-center p-2 hover:bg-regal-blue rounded-md w-full">
+                      <div className="flex flex-row justify-center items-center">
+                        <img
+                          src={user.photoURL}
+                          alt={avatar}
+                          className="w-12 h-12 mr-4 rounded-full"
+                        />
+                        <span className="font-bold text-white">
+                          {user.displayName}
+                        </span>
+                      </div>
+                      <div className="flex justify-end items-center">
+                        <HiUserAdd
+                          className="text-white text-2xl mr-4 cursor-pointer"
+                          onClick={() => addFriend(user)}
+                        />
+                      </div>
+                    </li>
+                  )
+                }
+              </ul>
+            );
+          })
+        }
       </div>
     </>
   );
 };
 
 export default Search;
-
-

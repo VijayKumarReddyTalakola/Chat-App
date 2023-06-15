@@ -24,6 +24,8 @@ const handleSubmit = async(e)=>{
     setErr(`User not found!`);
   } else if (errCode === "auth/wrong-password") {
     setErr(`Invalid credentials!`);
+  } else if (errCode === "auth/network-request-failed") {
+    setErr(`Your Network is Slow!`);
   }
   console.log((err.message));
   }

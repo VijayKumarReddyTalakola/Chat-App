@@ -13,6 +13,8 @@ const Input = () => {
 
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
+    const messageId = uuid();
+
 
   const handleSend = async () =>{
     if (text.trim() === "" && !img) {
@@ -20,7 +22,7 @@ const Input = () => {
       return;
     }
     if(img){
-      const storageRef = ref(storage, uuid());
+      const storageRef = ref(storage, messageId);
       const uploadTask = uploadBytesResumable(storageRef, img);
       uploadTask.on(
       (err) => {
@@ -30,7 +32,7 @@ const Input = () => {
         getDownloadURL(uploadTask.snapshot.ref).then(async(downloadURL) => {
           await updateDoc(doc(db,'chats',data.chatId),{
             messages: arrayUnion({
-              id: uuid(),
+              id: messageId,
               text,
               senderId: currentUser.uid,
               date: Timestamp.now(),
@@ -43,7 +45,7 @@ const Input = () => {
     }else{
       await updateDoc(doc(db, "chats", data.chatId), {
         messages: arrayUnion({
-          id: uuid(),
+          id: messageId,
           text,
           senderId: currentUser.uid,
           date: Timestamp.now(),
@@ -70,7 +72,7 @@ const Input = () => {
 
   return (
     <div className="flex flex-row absolute bottom-0 left-0 w-full bg-gray-50 mt-2 pl-2 lg:pl-4">
-      <input type="text" onChange={e => setText(e.target.value)} placeholder="Type a message..." value={text} className="w-full outline-none my-4 bg-gray-50 text-gray-500"/>
+      <input type="text" onKeyDown={(e) => e.code === "Enter" && handleSend()} onChange={e => setText(e.target.value)} placeholder="Type a message..." value={text} className="w-full outline-none my-4 bg-gray-50 text-gray-500"/>
       <input type="file" onChange={e => setImg(e.target.files[0])} id="fileupload" className="invisible w-1 h-1" />
       <label htmlFor="fileupload"> 
         <ImAttachment className="flex items-center w-5 h-5 text-gray-500 my-4 mx-2 cursor-pointer"/>
