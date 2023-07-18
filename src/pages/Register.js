@@ -11,17 +11,17 @@ const Register = () => {
 const [displayName,setDisplayName] = useState("");
 const [email,setEmail] = useState("");
 const [password,setPassword] = useState("");
-const [file,setFile] = useState("");
+const [file,setFile] = useState(null);
 const [err,setErr] = useState(false);
 
 const navigate = useNavigate();
 
 const handleSubmit = async(e)=>{
   e.preventDefault();
-    // if (!file) {
-    //   setErr("Please select an avatar.");
-    //   return;
-    // }
+    if (!file) {
+      setErr("Please select an avatar ");
+      return;
+    }
 
   try{
     const res = await createUserWithEmailAndPassword(auth, email, password);

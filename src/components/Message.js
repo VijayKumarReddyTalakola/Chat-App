@@ -2,8 +2,8 @@ import React, { useContext, useRef, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { format } from "date-fns";
-import { MdDelete, MdBlock } from "react-icons/md";
-import { doc, getDoc, updateDoc, writeBatch } from "firebase/firestore";
+import { MdDelete } from "react-icons/md";
+import { deleteField, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import avatar from "../images/avatar.png";
 
@@ -27,69 +27,44 @@ const Message = ({ message }) => {
     document.getElementById(`${message.id}`)?.requestFullscreen();
   };
 
+  const updateLastMessage = (message,document)=>{
+    const documentData = document.data();
+    const fieldIds = Object.keys(document.data());
+    fieldIds.forEach(async (fieldId) => {
+      if(fieldId === data.chatId){
+        const lastMessageData = documentData[fieldId].lastMessage;
+        if (lastMessageData?.id === message.id) {
+          const updatedLastMessage = {
+            [`${fieldId}.lastMessage.id`]: message.id,
+            [`${fieldId}.lastMessage.deleted`]: true,
+            [`${fieldId}.lastMessage.text`]: deleteField(),
+            [`${fieldId}.lastMessage.img`]: deleteField(),
+          };
+          await updateDoc(doc(db, "userChats", document.id), updatedLastMessage);
+        }
+      }
+    });
+  }
+
   const deleteMessage = async (message) => {
-    const batch = writeBatch(db);
     const chatDocRef = doc(db, "chats", data.chatId);
     const chatDoc = await getDoc(chatDocRef);
 
     if (chatDoc.exists()) {
       const messages = chatDoc.data().messages;
-      const updatedMessages = messages.map((msg) => {
-        if (msg.id === message.id) {
-          const updatedMsg = { ...msg, deleted: true };
-          delete updatedMsg.text;
-          delete updatedMsg.img;
-          return updatedMsg;
-        }
-        return msg;
-      });
-
-      const lastMessageIndex = updatedMessages.length - 1;
-      const lastMessage = updatedMessages[lastMessageIndex];
+      const updatedMessages = messages.filter((msg) => msg.id !== message.id);
       await updateDoc(chatDocRef, { messages: updatedMessages });
 
-      const userChatsDocRef = doc(db, "userChats", data.chatId);
+      const userChatsDocRef = doc(db, "userChats", currentUser.uid);
       const userChatsDoc = await getDoc(userChatsDocRef);
-      const userChatsData = userChatsDoc.data();
-      console.log(userChatsData);
-      if (userChatsData.id === data.chatId) {
-        const lastMessageInMyChat = userChatsData.lastMessage;
-        if (
-          lastMessageInMyChat &&
-          lastMessageInMyChat.id === message.id &&
-          lastMessageInMyChat === lastMessage
-        ) {
-          const updatedLastMessage = { ...lastMessageInMyChat, deleted: true };
-          delete updatedLastMessage.text;
-          delete updatedLastMessage.img;
-          batch.update(userChatsDocRef, {
-            [`${data.chatId}.lastMessage`]: updatedLastMessage,
-          });
-        }
-      }
+      updateLastMessage(message, userChatsDoc)
 
-      const otherUserChatsDocRef = doc(db, "userChats", data.chatId);
+      const otherUserChatsDocRef = doc(db, "userChats", data.user.uid);
       const otherUserChatsDoc = await getDoc(otherUserChatsDocRef);
-      const otherUserChatsData = otherUserChatsDoc.data();
-      console.log(otherUserChatsData);
-      if (otherUserChatsData.id === data.chatId) {
-        const lastMessageInOtherChat = otherUserChatsData.lastMessage;
-        if ( lastMessageInOtherChat && lastMessageInOtherChat.id === message.id && lastMessageInOtherChat === lastMessage) {
-          const updatedLastMessage = {
-            ...lastMessageInOtherChat,
-            deleted: true,
-          };
-          delete updatedLastMessage.text;
-          delete updatedLastMessage.img;
-          batch.update(otherUserChatsDocRef, {
-            [`${data.chatId}.lastMessage`]: updatedLastMessage,
-          });
-        }
-      }
-
-      await batch.commit();
+      updateLastMessage(message, otherUserChatsDoc)
     }
   };
+
 
   return (
     <>
@@ -103,25 +78,15 @@ const Message = ({ message }) => {
           />
           {/* Only text */}
           {message.text && !message.img && (
-            <div
-              onClick={() => setselected(!selected)}
-              className="flex flex-col my-2 justify-items-end max-w-[50%] "
-            >
-              <div className="flex justify-start bg-blue-400 ml-auto mr-2 text-white px-3 py-1 rounded-b-lg rounded-tr-none rounded-tl-lg">
-                <div className="flex justify-around items-center">
-                  {message.deleted ? (
-                    <div className="flex ">
-                      <MdBlock className="text-gray-500 mr-2" />
-                      <p className="text-center text-gray-500">
-                        This message is deleted.
-                      </p>
-                    </div>
-                  ) : (
-                    message.text
-                  )}
+            <div onClick={() => setselected(!selected)} className="relative flex flex-col my-2 justify-items-end ">
+              <div className=" flex justify-start bg-blue-400 ml-auto mr-2 text-white px-3 py-1 rounded-b-lg rounded-tr-none rounded-tl-lg">
+                <div className=" max-w-[90vw] md:max-w-[75%] flex justify-around items-center">
+                  <p className="flex justify-end bg-blue-400 ml-auto text-white rounded-b-lg rounded-tr-none rounded-tl-lg">
+                    {message.text}
+                  </p>
                   {selected && (
                     <MdDelete
-                      className=" text-white ml-3 cursor-pointer"
+                      className=" text-white ml-3 border-2 border-red-700 cursor-pointer"
                       onClick={() => deleteMessage(message)}
                     />
                   )}
@@ -140,7 +105,7 @@ const Message = ({ message }) => {
                   id={`${message.id}`}
                   src={message.img}
                   onDoubleClick={openFullScreen}
-                  alt="Image"
+                  alt="Message"
                   className="h-56 w-48 rounded-md sm:w-56 sm:h-64 cursor-pointer"
                 />
               </div>
@@ -158,7 +123,7 @@ const Message = ({ message }) => {
                     id={`${message.id}`}
                     src={message.img}
                     onDoubleClick={openFullScreen}
-                    alt="Image"
+                    alt="Message"
                     className="h-56 w-48 m-0.5 rounded-md sm:w-56 sm:h-64 cursor-pointer"
                   />
                   <p className="flex justify-start bg-blue-400 w-48 mr-auto ml-1 text-white p-1 rounded-b-lg rounded-tr-none rounded-tl-lg sm:w-56">
@@ -181,8 +146,8 @@ const Message = ({ message }) => {
           />
           {/* Only text */}
           {message.text && !message.img && (
-            <div className="flex flex-col my-2 max-w-[50%]">
-              <p className="flex justify-end bg-white ml-2 mr-auto text-black px-3 py-1 rounded-b-lg rounded-tl-none rounded-tr-lg">
+            <div className="flex flex-col my-2 max-w-[90vw] md:max-w-[75%]">
+              <p className="flex justify-start bg-white ml-2 mr-auto text-black px-3 py-1 rounded-b-lg rounded-tl-none rounded-tr-lg">
                 {message.text}
               </p>
               <span className="flex text-xs justify-end my-1 text-gray-500">
@@ -199,7 +164,7 @@ const Message = ({ message }) => {
                     id={`${message.id}`}
                     src={message.img}
                     onClick={openFullScreen}
-                    alt="Image"
+                    alt="Message"
                     className="h-56 w-48 rounded-md sm:w-56 sm:h-64 cursor-pointer"
                   />
                 </div>
@@ -218,7 +183,7 @@ const Message = ({ message }) => {
                     id={`${message.id}`}
                     src={message.img}
                     onClick={openFullScreen}
-                    alt="Image"
+                    alt="Message"
                     className="h-56 w-48 m-0.5 rounded-md sm:w-56 sm:h-64 cursor-pointer"
                   />
                   <p className="flex justify-start bg-white w-48 ml-1 mr-auto text-black p-1 rounded-b-lg rounded-tl-none rounded-tr-lg sm:w-56">

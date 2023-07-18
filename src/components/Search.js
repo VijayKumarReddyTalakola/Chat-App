@@ -8,7 +8,8 @@ import { ChatContext } from "../context/ChatContext";
 import avatar from "../images/avatar.png";
 
 
-const Search = () => {
+const Search = (props) => {
+  const { setIsSearching } = props;
   const [userName, setUserName] = useState("");
   const [users, setUsers] = useState([]);
   const [err, setErr] = useState(false);
@@ -22,41 +23,37 @@ const Search = () => {
     setUserName("");
   };
 
-  const handleSearch = async () => {
-    const lowercaseName = userName.toLowerCase();
-    if (lowercaseName === "") {
-      setUsers(null);
-      setErr(false);
-      return;
-    }
-    const q = query(collection(db, "users"));
-    try {
-      const querySnapshot = await getDocs(q);
-      let matchedUsers = [];
-      querySnapshot.forEach((doc) => {
-        const displayName = doc.data().displayName.toLowerCase();
-        if (displayName.includes(lowercaseName)) {
-          matchedUsers.push(doc.data());
-        }
-      });
-      if (matchedUsers.length === 0) {
-        setErr(true);
-      } else {
-        setUsers(matchedUsers);
-        setErr(false);
-      }
-    } catch (err) {
-      setErr(true);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const inputUserName = e.target.value;
+  const handleSearch = async (e) => {
     setUsers(null);
-    setErr(false);
-    setUserName(inputUserName);
-    if (inputUserName !== "") {
-      handleSearch();
+    if(e.target.value.trim() === "") {
+      setIsSearching(false)    
+      setErr(false);
+    }
+    setUserName(e.target.value.trim());
+
+    if (e.target.value.trim() !== "" && e.target.value.length >= 2) {
+      setIsSearching(true);
+      const name = e.target.value.toLowerCase();
+      const q = query(collection(db, "users"));
+      try {
+        const querySnapshot = await getDocs(q);
+        let matchedUsers = [];
+        querySnapshot.forEach((doc) => {
+          const displayName = doc.data().displayName.toLowerCase();
+          if (displayName.includes(name)) {
+            matchedUsers.push(doc.data());
+          }
+        });
+        if (matchedUsers.length === 0) {
+          setUsers(null);
+          setErr(true);
+        } else {
+          setUsers(matchedUsers);
+          setErr(false);
+        }
+      } catch (err) {
+        setErr(true);
+      }
     }
   };
 
@@ -88,6 +85,7 @@ const Search = () => {
     } catch (err) {
       setErr(err.message);
     }
+    openChat(user)
     setUsers(null);
     setUserName("");
   };
@@ -115,7 +113,7 @@ const Search = () => {
         <div className="w-full">
           <input
             type="search"
-            onChange={handleInputChange}
+            onChange={handleSearch}
             className="relative m-0 block w-full min-w-0 flex-auto rounded border border-solid border-neutral-500 bg-transparent bg-clip-padding px-3 py-1.5 text-base font-normal text-gray-50  transition duration-300 ease-in-out focus:border-primary-300 focus:text-gray-50 shadow-te-primary outline-none dark:placeholder:text-gray-50 "
             name="exampleSearch"
             value={userName}
@@ -167,7 +165,7 @@ const Search = () => {
                       </div>
                       <div className="flex justify-end items-center">
                         <HiUserAdd
-                          className="text-white text-2xl mr-4 cursor-pointer"
+                          className="text-white text-3xl mr-4 cursor-pointer"
                           onClick={() => addFriend(user)}
                         />
                       </div>

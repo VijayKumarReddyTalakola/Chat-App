@@ -101,17 +101,17 @@ const Chats = () => {
             <li
               onClick={() => handleSelect(chat[1].userInfo)}
               key={chat[0]}
-              className="flex items-center justify-between p-3 hover:bg-regal-blue hover:cursor-pointer rounded-md w-full md:p-2 "
+              className="flex items-center justify-between p-3 hover:bg-regal-blue hover:cursor-pointer rounded-md w-full "
             >
               <div className="flex flex-row justify-between">
                 <img
-                  src={chat[1].userInfo.photoURL}
+                  src={chat[1].userInfo?.photoURL}
                   alt={avatar}
                   className="w-12 h-12 mr-3 rounded-full md:mr-2 lg:mr-3 "
                 />
                 <div className="flex flex-col">
                   <span className="font-bold text-white">
-                    {chat[1].userInfo.displayName}
+                    {chat[1].userInfo?.displayName}
                   </span>
                   {renderLastMessage(chat[1].lastMessage)}
                 </div>

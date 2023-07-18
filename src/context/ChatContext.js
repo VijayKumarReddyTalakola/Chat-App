@@ -28,21 +28,6 @@ export const ChatContextProvider = ({ children }) => {
           user: {}
         };
 
-      case "UPDATE_PROFILE":
-        return {
-          ...state,
-          users:  state.users?.map((user) => {
-            if (user.uid === action.payload.uid) {
-              return {
-                ...user,
-                displayName: action.payload.displayName,
-                photoURL: action.payload.photoURL,
-              };
-            }
-            return user;
-          }),
-        }
-
       default:
         return state;
     }
