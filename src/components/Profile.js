@@ -127,7 +127,7 @@ const Profile = (props) => {
 
 
   return (
-    <div className="relative w-screen h-screen top-0 left-0 sm:w-1/3 lg:w-1/4 inset-0 shadow-lg bg-regal-blue flex flex-col p-3 gap-2overflow-hidden">
+    <div className="relative w-screen min-h-screen top-0 left-0 sm:w-1/3 lg:w-1/4 inset-0 shadow-lg bg-regal-blue flex flex-col p-3 gap-2 overflow-hidden">
       <div className="flex justify-center items-center mt-3 ">
         <FiArrowLeft
           className="absolute left-4 top-7 w-7 h-7 text-gray-200 cursor-pointer"
@@ -174,7 +174,7 @@ const Profile = (props) => {
               minLength={3}
             />
           ) : (
-            <p className="text-gray-300 text-lg">{currentUser.displayName}</p>
+            <p className="text-gray-300 text-lg pl-2">{currentUser.displayName}</p>
           )}
         </div>
         <div className="flex flex-col justify-start ml-5 mb-3">
@@ -187,14 +187,14 @@ const Profile = (props) => {
               onChange={(e) => setUpdatedEmail(e.target.value)}
             />
           ) : (
-            <p className="text-gray-300 text-lg">{currentUser.email}</p>
+            <p className="text-gray-300 text-lg pl-2">{currentUser.email}</p>
           )}
         </div>
         {isEditing && (
           <div className="flex flex-col justify-start ml-5 mb-3">
             <h3 className="text-white font-bold mb-1">New Password</h3>
               <input
-                type="password"
+                type="text"
                 value={updatedPassword}
                 className="bg-transparent  font-normal text-lg text-gray-200 p-2"
                 onChange={(e) => setUpdatedPassword(e.target.value)}

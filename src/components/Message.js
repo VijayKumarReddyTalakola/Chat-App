@@ -47,21 +47,23 @@ const Message = ({ message }) => {
   }
 
   const deleteMessage = async (message) => {
-    const chatDocRef = doc(db, "chats", data.chatId);
-    const chatDoc = await getDoc(chatDocRef);
+    if(message.senderId === currentUser.uid){
+      const chatDocRef = doc(db, "chats", data.chatId);
+      const chatDoc = await getDoc(chatDocRef);
 
-    if (chatDoc.exists()) {
-      const messages = chatDoc.data().messages;
-      const updatedMessages = messages.filter((msg) => msg.id !== message.id);
-      await updateDoc(chatDocRef, { messages: updatedMessages });
+      if (chatDoc.exists()) {
+        const messages = chatDoc.data().messages;
+        const updatedMessages = messages.filter((msg) => msg.id !== message.id);
+        await updateDoc(chatDocRef, { messages: updatedMessages });
 
-      const userChatsDocRef = doc(db, "userChats", currentUser.uid);
-      const userChatsDoc = await getDoc(userChatsDocRef);
-      updateLastMessage(message, userChatsDoc)
+        const userChatsDocRef = doc(db, "userChats", currentUser.uid);
+        const userChatsDoc = await getDoc(userChatsDocRef);
+        updateLastMessage(message, userChatsDoc)
 
-      const otherUserChatsDocRef = doc(db, "userChats", data.user.uid);
-      const otherUserChatsDoc = await getDoc(otherUserChatsDocRef);
-      updateLastMessage(message, otherUserChatsDoc)
+        const otherUserChatsDocRef = doc(db, "userChats", data.user.uid);
+        const otherUserChatsDoc = await getDoc(otherUserChatsDocRef);
+        updateLastMessage(message, otherUserChatsDoc)
+      }
     }
   };
 
@@ -69,28 +71,19 @@ const Message = ({ message }) => {
   return (
     <>
       {message.senderId === currentUser.uid ? (
-        <div ref={ref} className="flex flex-row-reverse w-full ">
+        <div ref={ref} className="flex flex-row-reverse ">
+          <div onClick={() => setselected(!selected)}  className="flex flex-row-reverse w-[90%] lg:max-w-[75%]">
           <img
             src={currentUser?.photoURL}
             alt={avatar}
             onClick={openFullScreen}
-            className="w-10 h-10 rounded-full"
+            className=" w-10 h-10 rounded-full"
           />
           {/* Only text */}
           {message.text && !message.img && (
-            <div onClick={() => setselected(!selected)} className="relative flex flex-col my-2 justify-items-end ">
-              <div className=" flex justify-start bg-blue-400 ml-auto mr-2 text-white px-3 py-1 rounded-b-lg rounded-tr-none rounded-tl-lg">
-                <div className=" max-w-[90vw] md:max-w-[75%] flex justify-around items-center">
-                  <p className="flex justify-end bg-blue-400 ml-auto text-white rounded-b-lg rounded-tr-none rounded-tl-lg">
-                    {message.text}
-                  </p>
-                  {selected && (
-                    <MdDelete
-                      className=" text-white ml-3 border-2 border-red-700 cursor-pointer"
-                      onClick={() => deleteMessage(message)}
-                    />
-                  )}
-                </div>
+            <div className=" flex flex-col my-2 justify-items-end">
+              <div className="flex justify-items-end items-center bg-blue-400 px-3 py-1 ml-auto mr-2 rounded-b-lg rounded-tr-none rounded-tl-lg">
+                <p className="flex text-white break-words">{message.text}</p>
               </div>
               <span className="flex text-xs justify-end my-1 text-gray-500 mr-2">
                 {getTimeFromTimestamp(message.date)}
@@ -106,7 +99,7 @@ const Message = ({ message }) => {
                   src={message.img}
                   onDoubleClick={openFullScreen}
                   alt="Message"
-                  className="h-56 w-48 rounded-md sm:w-56 sm:h-64 cursor-pointer"
+                  className="w-60 h-64 rounded-md cursor-pointer"
                 />
               </div>
               <span className="flex text-xs justify-end my-1 text-gray-500">
@@ -116,29 +109,34 @@ const Message = ({ message }) => {
           )}
           {/* Both text and image */}
           {message.img && message.text && (
-            <>
-              <div className="flex flex-col my-2">
-                <div className="flex flex-col bg-blue-400 p-1 m-1 rounded">
-                  <img
-                    id={`${message.id}`}
-                    src={message.img}
-                    onDoubleClick={openFullScreen}
-                    alt="Message"
-                    className="h-56 w-48 m-0.5 rounded-md sm:w-56 sm:h-64 cursor-pointer"
-                  />
-                  <p className="flex justify-start bg-blue-400 w-48 mr-auto ml-1 text-white p-1 rounded-b-lg rounded-tr-none rounded-tl-lg sm:w-56">
-                    {message.text}
-                  </p>
-                </div>
-                <span className="flex text-xs justify-end my-1 text-gray-500">
-                  {getTimeFromTimestamp(message.date)}
-                </span>
+            <div className="flex flex-col my-2">
+              <div className="flex flex-col bg-blue-400 p-1 m-1 rounded">
+                <img
+                  id={`${message.id}`}
+                  src={message.img}
+                  onDoubleClick={openFullScreen}
+                  alt="Message"
+                  className="w-60 h-64 m-0.5 rounded-md cursor-pointer"
+                />
+                <p className="flex justify-start flex-wrap break-all bg-blue-400 w-60 mr-auto text-white p-1 rounded-b-lg rounded-tr-none rounded-tl-lg">
+                  {message.text}
+                </p>
               </div>
-            </>
+              <span className="flex text-xs justify-end my-1 text-gray-500">
+                {getTimeFromTimestamp(message.date)}
+              </span>
+            </div>
           )}
+          {selected && (
+            <MdDelete
+              className=" text-blue-500 mr-1 mt-3 cursor-pointer"
+              onClick={() => deleteMessage(message)}
+            />
+          )}
+          </div>
         </div>
       ) : (
-        <div ref={ref} className="flex flex-row w-full">
+        <div ref={ref} className="flex flex-row w-[90%] lg:max-w-[75%]">
           <img
             src={data.user?.photoURL}
             alt={avatar}
@@ -146,10 +144,10 @@ const Message = ({ message }) => {
           />
           {/* Only text */}
           {message.text && !message.img && (
-            <div className="flex flex-col my-2 max-w-[90vw] md:max-w-[75%]">
-              <p className="flex justify-start bg-white ml-2 mr-auto text-black px-3 py-1 rounded-b-lg rounded-tl-none rounded-tr-lg">
-                {message.text}
-              </p>
+            <div className="flex flex-col my-2" >
+              <div className="flex justify-end bg-white ml-2 mr-auto px-3 py-1 rounded-b-lg rounded-tl-none rounded-tr-lg">
+                <p className="text-black break-words">{message.text}</p>
+              </div>
               <span className="flex text-xs justify-end my-1 text-gray-500">
                 {getTimeFromTimestamp(message.date)}
               </span>
@@ -157,44 +155,40 @@ const Message = ({ message }) => {
           )}
           {/* only Image */}
           {message.img && !message.text && (
-            <>
-              <div className="flex flex-col">
-                <div className="flex justify-items-end bg-white p-1 m-2 rounded">
-                  <img
-                    id={`${message.id}`}
-                    src={message.img}
-                    onClick={openFullScreen}
-                    alt="Message"
-                    className="h-56 w-48 rounded-md sm:w-56 sm:h-64 cursor-pointer"
-                  />
-                </div>
-                <span className="flex text-xs justify-end my-1 text-gray-500">
-                  {getTimeFromTimestamp(message.date)}
-                </span>
+            <div className="flex flex-col">
+              <div className="flex justify-items-end bg-white p-1 m-2 rounded">
+                <img
+                  id={`${message.id}`}
+                  src={message.img}
+                  onDoubleClick={openFullScreen}
+                  alt="Message"
+                  className="w-60 h-64 rounded-md cursor-pointer"
+                />
               </div>
-            </>
+              <span className="flex text-xs justify-end my-1 text-gray-500">
+                {getTimeFromTimestamp(message.date)}
+              </span>
+            </div>
           )}
           {/* Both text and image */}
           {message.img && message.text && (
-            <>
-              <div className="flex flex-col">
-                <div className="flex flex-col justify-items-end bg-white p-1 m-2 rounded">
-                  <img
-                    id={`${message.id}`}
-                    src={message.img}
-                    onClick={openFullScreen}
-                    alt="Message"
-                    className="h-56 w-48 m-0.5 rounded-md sm:w-56 sm:h-64 cursor-pointer"
-                  />
-                  <p className="flex justify-start bg-white w-48 ml-1 mr-auto text-black p-1 rounded-b-lg rounded-tl-none rounded-tr-lg sm:w-56">
-                    {message.text}
-                  </p>
-                </div>
-                <span className="flex text-xs justify-end my-1 text-gray-500">
-                  {getTimeFromTimestamp(message.date)}
-                </span>
+            <div className="flex flex-col">
+              <div className="flex flex-col justify-items-end bg-white p-2 m-2 rounded ">
+                <img
+                  id={`${message.id}`}
+                  src={message.img}
+                  onDoubleClick={openFullScreen}
+                  alt="Message"
+                  className="w-60 h-64 m-0.5 rounded-md cursor-pointer"
+                />
+                <p className="flex justify-start break-all bg-white w-60 mr-auto text-black p-1 rounded-b-lg rounded-tl-none rounded-tr-lg ">
+                  {message.text}
+                </p>
               </div>
-            </>
+              <span className="flex text-xs justify-end my-1 text-gray-500">
+                {getTimeFromTimestamp(message.date)}
+              </span>
+            </div>
           )}
         </div>
       )}

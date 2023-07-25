@@ -111,7 +111,7 @@ const Chat = ({ setOverlayVisible }) => {
                 className="w-10 h-10 mr-3 ml-2 rounded-full cursor-pointer"
               />
               <span className="text-white font-medium text-2xl">
-                {data.user?.displayName}
+                { (data.user?.uid === currentUser.uid ) ?  ((data.user?.displayName)+' (You)') : (data.user?.displayName)}
               </span>
             </div>
             <div className="flex items-center">

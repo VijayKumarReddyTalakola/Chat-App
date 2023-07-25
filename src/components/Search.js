@@ -21,6 +21,7 @@ const Search = (props) => {
     dispatch({ type: "CHANGE_USER", payload: user });
     setUsers(null);
     setUserName("");
+    setIsSearching(false)
   };
 
   const handleSearch = async (e) => {
