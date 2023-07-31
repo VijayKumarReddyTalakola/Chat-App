@@ -20,7 +20,7 @@ const Sidebar = () => {
         setIsDropdownOpen={setIsDropdownOpen}
       />
     ) : (
-      <div className="flex flex-col justify-start min-h-screen bg-darkblue overflow-hidden h-full max-h-screen sm:w-1/3 lg:w-1/4">
+      <div className="flex flex-col justify-start min-h-screen bg-darkblue overflow-hidden h-full max-h-screen md:w-1/3 lg:w-1/4">
         <div className="sticky top-0 w-screen z-10">
           <Navbar
             setisProfileOpen={setisProfileOpen}
@@ -39,7 +39,7 @@ const Sidebar = () => {
         setIsDropdownOpen={setIsDropdownOpen}
       />
     ) : (
-      <div className="hidden sm:flex flex-col justify-start min-h-screen bg-darkblue overflow-hidden h-full max-h-screen sm:w-1/3 lg:w-1/4">
+      <div className="hidden md:flex flex-col justify-start min-h-screen bg-darkblue overflow-hidden h-full max-h-screen md:w-1/3 lg:w-1/4">
         <div className="sticky top-0 w-screen z-10">
           <Navbar
             setisProfileOpen={setisProfileOpen}

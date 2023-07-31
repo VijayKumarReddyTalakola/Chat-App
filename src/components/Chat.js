@@ -9,6 +9,7 @@ import { db, storage } from "../firebase";
 import { AuthContext } from "../context/AuthContext";
 import { deleteObject, ref } from "firebase/storage";
 import avatar from "../images/avatar.png";
+// import Logo from '/VChat.png'
 
 
 const Chat = ({ setOverlayVisible }) => {
@@ -96,7 +97,7 @@ const Chat = ({ setOverlayVisible }) => {
   return (
     <>
       {data.chatId !== "null" ? (
-        <div className="relative flex flex-col items-center min-h-screen w-full bg-shadywhite overflow-x-hidden sm:w-2/3 lg:w-3/4 h-full">
+        <div className="relative flex flex-col items-center min-h-screen w-full bg-shadywhite overflow-hidden md:w-2/3 lg:w-3/4 h-full">
           <div className="flex justify-between items-center bg-shadyblue w-full px-4 py-3">
             <div className="flex items-center flex-row">
               <FiArrowLeft
@@ -151,7 +152,7 @@ const Chat = ({ setOverlayVisible }) => {
           </div>
           <div className=" flex flex-col w-full overflow-y-scroll bg-shadywhite max-h-[calc(100vh-7rem)]">
             {showPopup && (
-              <div className="z-50 flex absolute top-1/3 left-2/5 ml-12 flex-col  min-h-[30%] p-5 min-w-[75%] max-w-[60%] items-center text-center bg-darkblue sm:p-7 sm:min-w-[70%] sm:max-h-[50%] sm:min-h-max md:ml-20 lg:ml-52 lg:min-w-[30%] lg:max-w-[50%] xl:ml-56">
+              <div className="z-50 flex absolute top-1/3 left-2/5 ml-12 flex-col  min-h-[30%] p-5 min-w-[75%] max-w-[60%] items-center text-center bg-darkblue md:p-7 md:min-w-[70%] md:max-h-[50%] md:min-h-max md:ml-20 lg:ml-52 lg:min-w-[30%] lg:max-w-[50%] xl:ml-56">
                 <div className="flex flex-col">
                   <h3 className="text-white text-xl flex justify-start md:text-2xl">
                     {selectedOption} ?
@@ -168,7 +169,7 @@ const Chat = ({ setOverlayVisible }) => {
                     Cancel
                   </button>
                   <button
-                    className="ml-4 bg-blue-500 px-4 py-2 rounded-xl text-white my-2.5 hover:bg-blue-700 sm:ml-5 mr-3"
+                    className="ml-4 bg-blue-500 px-4 py-2 rounded-xl text-white my-2.5 hover:bg-blue-700 md:ml-5 mr-3"
                     onClick={handleSelectedOption}
                   >
                     Confirm
@@ -181,8 +182,11 @@ const Chat = ({ setOverlayVisible }) => {
           <Input />
         </div>
       ) : (
-        <div className="hidden sm:flex flex-col min-h-screen p-4 w-full font-bold justify-center items-center text-center text-3xl bg-shadywhite overflow-x-hidden sm:w-2/3 lg:w-3/4 ">
-          Welcome to VChat
+        <div className="hidden md:flex flex-col min-h-screen p-4 w-full font-bold justify-center items-center text-center text-3xl bg-shadywhite overflow-x-hidden md:w-2/3 lg:w-3/4 ">
+          <div className="flex flex-col justify-center items-center ">
+            {/* <img src='/VChat.png' alt="" className="w-20 h-20 rounded-2xl" /> */}
+            <p>Welcome to VChat</p>
+          </div>
           <div className="text-lg font-normal">
             Send and receive messages without having any external apps.
           </div>

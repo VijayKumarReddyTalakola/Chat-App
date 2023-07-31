@@ -127,13 +127,13 @@ const Profile = (props) => {
 
 
   return (
-    <div className="relative w-screen min-h-screen top-0 left-0 sm:w-1/3 lg:w-1/4 inset-0 shadow-lg bg-regal-blue flex flex-col p-3 gap-2 overflow-hidden">
+    <div className="relative w-full min-h-screen max-h-screen top-0 left-0 md:w-1/3 lg:w-1/4 inset-0 shadow-lg bg-regal-blue flex flex-col p-3 gap-2 overflow-x-hidden">
       <div className="flex justify-center items-center mt-3 ">
         <FiArrowLeft
-          className="absolute left-4 top-7 w-7 h-7 text-gray-200 cursor-pointer"
+          className="absolute left-4 top-7 w-7 h-7 text-white cursor-pointer"
           onClick={closeProfile}
         />
-        <h1 className="text-3xl text-white text-center">Profile</h1>
+        <h3 className="text-3xl text-white text-center">{isEditing ? "Edit Profile" : "Profile"}</h3>
       </div>
       <div className="flex flex-col ">
         <div className="mt-7 flex flex-col justify-center items-center">
@@ -142,7 +142,7 @@ const Profile = (props) => {
             onClick={openFullScreen}
             alt={avatar}
             id="dp"
-            className="w-48 h-48 rounded-full cursor-pointer lg:w-52 lg:h-52 "
+            className="w-56 h-56 rounded-full cursor-pointer lg:w-52 lg:h-52"
           />
           <label htmlFor="avatar" className="flex mt-3">
             {isEditing &&

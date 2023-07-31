@@ -37,7 +37,7 @@ const Navbar = (props) => {
   };
 
   return (
-    <header className="relative top-0 left-0 sm:w-1/3 lg:w-1/4  inset-x-0 shadow-lg bg-regal-blue flex items-center justify-between p-3 gap-2 ">
+    <header className="relative top-0 left-0 md:w-1/3 lg:w-1/4  inset-x-0 shadow-lg bg-regal-blue flex items-center justify-between p-3 gap-2 ">
       <div className="flex">
         <h1 className="text-white font-medium text-2xl text-start top-0 left-0 ml-0">
           VChat
@@ -50,7 +50,7 @@ const Navbar = (props) => {
             onClick={openFullScreen}
             alt={avatar}
             id="dp"
-            className="w-9 h-9 mr-3 rounded-full cursor-pointer sm:w-10 sm:h-10"
+            className="w-9 h-9 mr-3 rounded-full cursor-pointer md:w-10 md:h-10"
           />
         </li>
         <li>

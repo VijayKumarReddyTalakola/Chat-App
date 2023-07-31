@@ -110,7 +110,7 @@ const Search = (props) => {
 
   return (
     <>
-      <div className="p-2 mr-2 w-full bg-darkblue flex flex-col justify-start sm:w-1/3 lg:w-1/4">
+      <div className="p-2 mr-2 w-full bg-darkblue flex flex-col justify-start md:w-1/3 lg:w-1/4">
         <div className="w-full">
           <input
             type="search"
