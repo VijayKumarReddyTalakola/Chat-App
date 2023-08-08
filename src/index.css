@@ -23,3 +23,10 @@ code {
 ::-webkit-scrollbar {
   display: none;
 }
+
+.EmojiPickerReact .Flex.FlexRow{
+  display: none;
+}
+.epr-body{
+  height: 200px;
+}
