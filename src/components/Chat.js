@@ -9,8 +9,7 @@ import { db, storage } from "../firebase";
 import { AuthContext } from "../context/AuthContext";
 import { deleteObject, ref } from "firebase/storage";
 import avatar from "../images/avatar.png";
-// import Logo from '/VChat.png'
-
+import { v4 as uuid } from "uuid";
 
 const Chat = ({ setOverlayVisible }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,6 +17,7 @@ const Chat = ({ setOverlayVisible }) => {
   const [showPopup, setShowPopup] = useState(false);
   const { data, dispatch } = useContext(ChatContext);
   const { currentUser } = useContext(AuthContext);
+  const messageId = uuid();
 
   const openFullScreen = () => {
     document.getElementById("profile")?.requestFullscreen();
@@ -28,25 +28,37 @@ const Chat = ({ setOverlayVisible }) => {
     setIsDropdownOpen(false);
   };
 
-  const deletePhotos = async () => {
-    const chatDocRef = doc(db, "chats", data.chatId);
-    const chatSnapshot = await getDoc(chatDocRef);
-    const messages = chatSnapshot.data()?.messages;
-    messages?.forEach(async (message) => {
-      if (message.img) {
-        await deleteObject(ref(storage, message.id));
+  const deleteFiles = async () => {
+    try {
+      const chatDocRef = doc(db, "chats", data.chatId);
+      const chatSnapshot = await getDoc(chatDocRef);
+      if (chatSnapshot.exists()) {
+        const messages = chatSnapshot.data()?.messages;
+        messages?.forEach(async (message) => {
+          if (message.file) {
+            await deleteObject(ref(storage, message.id));
+          }
+        });
       }
-    });
+    } catch (error) {
+      console.error("Error deleting files:", error);
+    }
   };
 
   const clearChat = async () => {
-    deletePhotos();
+    deleteFiles();
     await setDoc(doc(db, "chats", data.chatId), { messages: [] });
     await updateDoc(doc(db, "userChats", currentUser.uid), {
-      [data.chatId + ".lastMessage"]: "",
+      [data.chatId + ".lastMessage"]: {
+        id: messageId,
+        text: "Entire Chat was deleted",
+      },
     });
     await updateDoc(doc(db, "userChats", data.user.uid), {
-      [data.chatId + ".lastMessage"]: "",
+      [data.chatId + ".lastMessage"]: {
+        id: messageId,
+        text: "Entire Chat was deleted",
+      },
     });
     setIsDropdownOpen(false);
   };
@@ -61,7 +73,7 @@ const Chat = ({ setOverlayVisible }) => {
     batch.update(friendUserRef, {
       [data.chatId]: deleteField(),
     });
-    deletePhotos();
+    deleteFiles();
     const chatDocRef = doc(db, "chats", data.chatId);
     batch.delete(chatDocRef);
     await batch.commit();
@@ -101,18 +113,20 @@ const Chat = ({ setOverlayVisible }) => {
           <div className="flex justify-between items-center bg-shadyblue w-full px-4 py-3">
             <div className="flex items-center flex-row">
               <FiArrowLeft
-                className="w-7 h-7 text-gray-200 -ml-2 cursor-pointer sm:hidden"
+                className="w-7 h-7 text-gray-200 -ml-2 cursor-pointer md:hidden"
                 onClick={() => closeChat(data?.user)}
               />
               <img
-                src={data.user?.photoURL}
+                src={data.user?.photoURL || avatar}
                 id="profile"
                 onClick={openFullScreen}
                 alt={avatar}
                 className="w-10 h-10 mr-3 ml-2 rounded-full cursor-pointer"
               />
               <span className="text-white font-medium text-2xl">
-                { (data.user?.uid === currentUser.uid ) ?  ((data.user?.displayName)+' (You)') : (data.user?.displayName)}
+                {data.user?.uid === currentUser.uid
+                  ? data.user?.displayName + " (You)"
+                  : data.user?.displayName}
               </span>
             </div>
             <div className="flex items-center">
@@ -152,7 +166,7 @@ const Chat = ({ setOverlayVisible }) => {
           </div>
           <div className=" flex flex-col w-full overflow-y-scroll bg-shadywhite max-h-[calc(100vh-7rem)]">
             {showPopup && (
-              <div className="z-50 flex absolute top-1/3 left-2/5 ml-12 flex-col  min-h-[30%] p-5 min-w-[75%] max-w-[60%] items-center text-center bg-darkblue md:p-7 md:min-w-[70%] md:max-h-[50%] md:min-h-max md:ml-20 lg:ml-52 lg:min-w-[30%] lg:max-w-[50%] xl:ml-56">
+              <div className="z-50 flex absolute top-1/3 left-2/5 ml-12 flex-col min-h-[30%] p-5 min-w-[75%] max-w-[60%] items-center text-center bg-darkblue md:p-7 md:min-w-[70%] md:max-h-[50%] md:min-h-max md:ml-20 lg:ml-52 lg:min-w-[30%] lg:max-w-[50%] xl:ml-56">
                 <div className="flex flex-col">
                   <h3 className="text-white text-xl flex justify-start md:text-2xl">
                     {selectedOption} ?
@@ -184,7 +198,6 @@ const Chat = ({ setOverlayVisible }) => {
       ) : (
         <div className="hidden md:flex flex-col min-h-screen p-4 w-full font-bold justify-center items-center text-center text-3xl bg-shadywhite overflow-x-hidden md:w-2/3 lg:w-3/4 ">
           <div className="flex flex-col justify-center items-center ">
-            {/* <img src='/VChat.png' alt="" className="w-20 h-20 rounded-2xl" /> */}
             <p>Welcome to VChat</p>
           </div>
           <div className="text-lg font-normal">

@@ -5,126 +5,119 @@ import { auth, db, storage } from "../firebase";
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { doc, updateDoc, getDocs, collection } from "firebase/firestore";
 import avatar from "../images/avatar.png";
-import { updateProfile, updateEmail ,updatePassword} from "firebase/auth";
+import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 const Profile = (props) => {
-    const { setisProfileOpen, setIsDropdownOpen } = props;
-    const navigate = useNavigate();
-    const { currentUser } = useContext(AuthContext);
-    const [updateError, setUpdateError] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [updatedDisplayName, setUpdatedDisplayName] = useState(currentUser.displayName);
-    const [updatedProfileImage, setUpdatedProfileImage] = useState(null);
-    const [updatedEmail, setUpdatedEmail] = useState(currentUser.email);
-    const [updatedPassword, setUpdatedPassword] = useState("");
+  const { setisProfileOpen, setIsDropdownOpen } = props;
+  const navigate = useNavigate();
+  const { currentUser } = useContext(AuthContext);
+  const [updateError, setUpdateError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [updatedDisplayName, setUpdatedDisplayName] = useState(currentUser.displayName);
+  const [updatedProfileImage, setUpdatedProfileImage] = useState(null);
+  const [updatedEmail, setUpdatedEmail] = useState(currentUser.email);
+  const [updatedPassword, setUpdatedPassword] = useState("");
 
+  const openFullScreen = () => {
+    document.getElementById("dp")?.requestFullscreen();
+  };
 
-    const openFullScreen = () => {
-      document.getElementById("dp")?.requestFullscreen();
-    };
-
-
-    const updateProfileForOthers = async () => {
-      const q = collection(db, "userChats");
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach(async (document) => {
-        const data = document.data();
-        const fieldIds = Object.keys(data);
-        fieldIds.forEach(async (fieldId) => {
-          const userInfo = data[fieldId].userInfo;
-          if (userInfo?.uid === currentUser.uid) {
-            const updatedData = {
-              [`${fieldId}.userInfo.uid`]: currentUser.uid,
-              [`${fieldId}.userInfo.displayName`]: updatedDisplayName,
-              [`${fieldId}.userInfo.photoURL`]: updatedProfileImage ? updatedProfileImage : currentUser.photoURL,
-            };
-            await updateDoc(doc(db, "userChats", document.id), updatedData);
-          }
-        });
+  const updateProfileForOthers = async () => {
+    const q = collection(db, "userChats");
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(async (document) => {
+      const data = document.data();
+      const fieldIds = Object.keys(data);
+      fieldIds.forEach(async (fieldId) => {
+        const userInfo = data[fieldId].userInfo;
+        if (userInfo?.uid === currentUser.uid) {
+          const updatedData = {
+            [`${fieldId}.userInfo.uid`]: currentUser.uid,
+            [`${fieldId}.userInfo.displayName`]: updatedDisplayName,
+            [`${fieldId}.userInfo.photoURL`]: updatedProfileImage ? updatedProfileImage : currentUser.photoURL };
+          await updateDoc(doc(db, "userChats", document.id), updatedData);
+        }
       });
-    };
+    });
+  };
 
-
-    const handleUpdateProfile = async () => {
-      try {
-        const currentUserRef = doc(db, "users", currentUser.uid);
-        // Email is updated
-        if(updatedEmail!== currentUser.email) {
-          await updateEmail(auth.currentUser,updatedEmail);
-          await updateDoc(currentUserRef, {
-            email: updatedEmail,
-          });
-        }
-        // Password is updated
-        if(updatedPassword) {
-          await updatePassword(auth.currentUser, updatedPassword); 
-        }
-        // Only Display name has changed
-        if ( !updatedProfileImage && updatedDisplayName !== currentUser.displayName ) {
-          await updateProfile(auth.currentUser, {
-            displayName: updatedDisplayName,
-          });
-          await updateDoc(currentUserRef, {
-            displayName: updatedDisplayName,
-          });
-          updateProfileForOthers();
-        }
-        // Update the profile image with/without display name
-        else if (updatedProfileImage) {
-          const oldStorageRef = ref(storage, currentUser.displayName);
-          if (oldStorageRef) {
-            deleteObject(oldStorageRef);
-          } else {
-            console.log(`Old Image Reference Not Found`);
-          }
-          const newStorageRef = ref(storage, updatedDisplayName);
-          const uploadTask = uploadBytesResumable( newStorageRef, updatedProfileImage);
-          uploadTask.on(
-            (error) => {
-              console.log(error.message);
-              setUpdateError("Failed to upload new avatar");
-            },
-            () => {
-              getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
-                await updateProfile(auth.currentUser, {
-                  displayName: updatedDisplayName,
-                  photoURL: downloadURL,
-                });
-                await updateDoc(currentUserRef, {
-                  displayName: updatedDisplayName,
-                  photoURL: downloadURL,
-                });
-              });
-            }
-          );
-          updateProfileForOthers();
-        }
-        closeProfile();
-        navigate("/")
-      } catch (error) {
-        console.log(error.message);
-        setUpdateError("Failed to update profile !");
+  const handleUpdateProfile = async () => {
+    try {
+      const currentUserRef = doc(db, "users", currentUser.uid);
+      // Email is updated
+      if (updatedEmail !== currentUser.email) {
+        await updateEmail(auth.currentUser, updatedEmail);
+        await updateDoc(currentUserRef, {
+          email: updatedEmail,
+        });
       }
-    };
+      // Password is updated
+      if (updatedPassword) {
+        await updatePassword(auth.currentUser, updatedPassword);
+      }
+      // Only Display name has changed
+      if ( !updatedProfileImage && updatedDisplayName !== currentUser.displayName ) {
+        await updateProfile(auth.currentUser, {
+          displayName: updatedDisplayName,
+        });
+        await updateDoc(currentUserRef, {
+          displayName: updatedDisplayName,
+        });
+        updateProfileForOthers();
+      }
+      // Update the profile image with/without display name
+      else if (updatedProfileImage) {
+        const oldStorageRef = ref(storage, currentUser.displayName);
+        if (oldStorageRef) {
+          deleteObject(oldStorageRef);
+        } else {
+          console.log(`Old Image Reference Not Found`);
+        }
+        const newStorageRef = ref(storage, updatedDisplayName);
+        const uploadTask = uploadBytesResumable( newStorageRef, updatedProfileImage);
+        uploadTask.on(
+          (error) => {
+            console.log(error.message);
+            setUpdateError("Failed to upload new avatar");
+          },
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
+              await updateProfile(auth.currentUser, {
+                displayName: updatedDisplayName,
+                photoURL: downloadURL,
+              });
+              await updateDoc(currentUserRef, {
+                displayName: updatedDisplayName,
+                photoURL: downloadURL,
+              });
+            });
+          }
+        );
+        updateProfileForOthers();
+      }
+      closeProfile();
+      navigate("/");
+    } catch (error) {
+      console.log(error.message);
+      setUpdateError("Failed to update profile !");
+    }
+  };
 
+  const closeProfile = () => {
+    setIsEditing(false);
+    setisProfileOpen(false);
+    setIsDropdownOpen(false);
+  };
 
-    const closeProfile = () => {
-      setIsEditing(false);
-      setisProfileOpen(false);
-      setIsDropdownOpen(false);
-    };
-
-
-    const closeEditor = () => {
-      setUpdatedDisplayName(currentUser.displayName);
-      setUpdatedEmail(currentUser.email);
-      setUpdatedProfileImage(null);
-      setUpdatedPassword("");
-      setUpdateError(false);
-      setIsEditing(false);
-    };
-
+  const closeEditor = () => {
+    setUpdatedDisplayName(currentUser.displayName);
+    setUpdatedEmail(currentUser.email);
+    setUpdatedProfileImage(null);
+    setUpdatedPassword("");
+    setUpdateError(false);
+    setIsEditing(false);
+  };
 
   return (
     <div className="relative w-full min-h-screen max-h-screen top-0 left-0 md:w-1/3 lg:w-1/4 inset-0 shadow-lg bg-regal-blue flex flex-col p-3 gap-2 overflow-x-hidden">
@@ -133,28 +126,25 @@ const Profile = (props) => {
           className="absolute left-4 top-7 w-7 h-7 text-white cursor-pointer"
           onClick={closeProfile}
         />
-        <h3 className="text-3xl text-white text-center">{isEditing ? "Edit Profile" : "Profile"}</h3>
+        <h3 className="text-3xl text-white text-center">
+          {isEditing ? "Edit Profile" : "Profile"}
+        </h3>
       </div>
       <div className="flex flex-col ">
         <div className="mt-7 flex flex-col justify-center items-center">
           <img
-            src={currentUser.photoURL}
+            src={currentUser.photoURL || avatar}
             onClick={openFullScreen}
             alt={avatar}
             id="dp"
             className="w-56 h-56 rounded-full cursor-pointer lg:w-52 lg:h-52"
           />
           <label htmlFor="avatar" className="flex mt-3">
-            {isEditing &&
-              (currentUser.photoURL ? (
-                <p className="text-white text-xl cursor-pointer">
-                  Update Avatar
-                </p>
-              ) : (
-                <p className="text-white text-xl cursor-pointer">
-                  Upload Avatar
-                </p>
-              ))}
+            {isEditing && (
+              <p className="text-white text-xl cursor-pointer">
+                {currentUser.photoURL ? "Update " : "Upload "}Avatar
+              </p>
+            )}
           </label>
           <input
             onChange={(e) => setUpdatedProfileImage(e.target.files[0])}
@@ -193,14 +183,14 @@ const Profile = (props) => {
         {isEditing && (
           <div className="flex flex-col justify-start ml-5 mb-3">
             <h3 className="text-white font-bold mb-1">New Password</h3>
-              <input
-                type="text"
-                value={updatedPassword}
-                className="bg-transparent  font-normal text-lg text-gray-200 p-2"
-                onChange={(e) => setUpdatedPassword(e.target.value)}
-                placeholder="Enter New Password"
-                minLength={6}
-              />
+            <input
+              type="text"
+              value={updatedPassword}
+              className="bg-transparent  font-normal text-lg text-gray-200 p-2"
+              onChange={(e) => setUpdatedPassword(e.target.value)}
+              placeholder="Enter New Password"
+              minLength={6}
+            />
           </div>
         )}
         {isEditing && updateError && (

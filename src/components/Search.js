@@ -137,7 +137,7 @@ const Search = (props) => {
                   <li onClick={() => openChat(user)} className="flex items-center justify-between p-3 hover:bg-regal-blue hover:cursor-pointer rounded-md w-full md:p-2">
                     <div className="flex flex-row justify-center items-center">
                       <img
-                        src={user.photoURL}
+                        src={user.photoURL || avatar}
                         alt={avatar}
                         className="w-12 h-12 mr-3 rounded-full md:mr-2 lg:mr-3"
                       />
@@ -156,7 +156,7 @@ const Search = (props) => {
                     <li className="flex justify-between items-center p-2 hover:bg-regal-blue rounded-md w-full">
                       <div className="flex flex-row justify-center items-center">
                         <img
-                          src={user.photoURL}
+                          src={user.photoURL || avatar}
                           alt={avatar}
                           className="w-12 h-12 mr-4 rounded-full"
                         />

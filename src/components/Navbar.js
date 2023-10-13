@@ -1,11 +1,10 @@
-import { deleteUser, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import React, { useContext } from "react";
-import { auth, db } from "../firebase";
+import { auth } from "../firebase";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { FiMoreVertical } from "react-icons/fi";
 import avatar from "../images/avatar.png";
-// import { deleteField, doc, writeBatch } from "firebase/firestore";
 
 
 const Navbar = (props) => {
@@ -18,18 +17,6 @@ const Navbar = (props) => {
     document.getElementById("dp")?.requestFullscreen();
   };
 
-
-  // const RemoveAccount = async () => {
-  //   const batch = writeBatch(db);
-  //   const UserRef = doc(db, "users", currentUser.uid);
-  //   batch.delete(UserRef);
-  //   const UserDocRef = doc(db, "userChats", currentUser.uid);
-  //   batch.update(UserDocRef, {
-  //     [data.chatId]: deleteField(),
-  //   });
-  //   await batch.commit();
-  //   deleteUser(auth.currentUser)
-  // };
 
   const Logout = () => {
     dispatch({ type: "REMOVE_USER", payload: data?.user });
@@ -46,7 +33,7 @@ const Navbar = (props) => {
       <ul className="flex flex-row justify-center items-center">
         <li>
           <img
-            src={currentUser.photoURL}
+            src={currentUser.photoURL || avatar}
             onClick={openFullScreen}
             alt={avatar}
             id="dp"
@@ -55,7 +42,7 @@ const Navbar = (props) => {
         </li>
         <li>
           <span className="font-bold text-white mt-2 sm:text-2xl md:font-normal">
-            {currentUser.displayName?.split(" ")[0]}
+            {currentUser.displayName?.split(" ")[0] || "User"}
           </span>
         </li>
         <li>
@@ -74,12 +61,6 @@ const Navbar = (props) => {
               >
                 Profile
               </li>
-              {/* <li
-                className="px-4 py-2 text-white hover:bg-regal-blue cursor-pointer"
-                onClick={() => RemoveAccount()}
-              >
-                Delete Account
-              </li> */}
               <li
                 className="px-4 py-2 text-white hover:bg-regal-blue cursor-pointer"
                 onClick={() => Logout()}
