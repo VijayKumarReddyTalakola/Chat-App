@@ -10,6 +10,7 @@ import { AuthContext } from "../context/AuthContext";
 import { deleteObject, ref } from "firebase/storage";
 import avatar from "../images/avatar.png";
 import { v4 as uuid } from "uuid";
+import logo from '../images/logo.png'
 
 const Chat = ({ setOverlayVisible }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -36,7 +37,7 @@ const Chat = ({ setOverlayVisible }) => {
         const messages = chatSnapshot.data()?.messages;
         messages?.forEach(async (message) => {
           if (message.file) {
-            await deleteObject(ref(storage, message.id));
+            await deleteObject(ref(storage, message.fileName));
           }
         });
       }
@@ -109,7 +110,9 @@ const Chat = ({ setOverlayVisible }) => {
   return (
     <>
       {data.chatId !== "null" ? (
-        <div className="relative flex flex-col items-center min-h-screen w-full bg-shadywhite overflow-hidden md:w-2/3 lg:w-3/4 h-full">
+        <div
+          className="relative flex flex-col items-center min-h-screen w-full bg-shadywhite overflow-hidden md:w-2/3 lg:w-3/4 h-full"
+        >
           <div className="flex justify-between items-center bg-shadyblue w-full px-4 py-3">
             <div className="flex items-center flex-row">
               <FiArrowLeft
@@ -197,11 +200,12 @@ const Chat = ({ setOverlayVisible }) => {
         </div>
       ) : (
         <div className="hidden md:flex flex-col min-h-screen p-4 w-full font-bold justify-center items-center text-center text-3xl bg-shadywhite overflow-x-hidden md:w-2/3 lg:w-3/4 ">
-          <div className="flex flex-col justify-center items-center ">
+          <img src={logo} alt="VChat" className="w-24 h-24" />
+          <div className="flex flex-col justify-center items-center -mt-5">
             <p>Welcome to VChat</p>
           </div>
           <div className="text-lg font-normal">
-            Send and receive messages without having any external apps.
+            Send and receive messages without any apps.
           </div>
         </div>
       )}

@@ -2,7 +2,7 @@ import React, { useContext, useRef, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from "../context/ChatContext";
 import { format } from "date-fns";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdFileDownload } from "react-icons/md";
 import { deleteField, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, storage } from "../firebase";
 import avatar from "../images/avatar.png";
@@ -12,7 +12,6 @@ import { deleteObject, getMetadata, ref as storageRef } from "firebase/storage";
 const Message = ({ message }) => {
   const isImage = /\.(jpeg|jpg|png|gif|webp|tiff|bmp)$/i.test(message?.fileName);
   const [fileSize, setFileSize] = useState(null);
-  const [selected, setselected] = useState(false);
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
   const ref = useRef();
@@ -51,7 +50,7 @@ const Message = ({ message }) => {
 
   const deleteMessage = async (message) => {
     if (message.file) {
-      await deleteObject(storageRef(storage, message.id));
+      await deleteObject(storageRef(storage, message.fileName));
     }
     if (message.senderId === currentUser.uid) {
       const chatDocRef = doc(db, "chats", data.chatId);
@@ -85,8 +84,11 @@ const Message = ({ message }) => {
   const formatFileSize = (bytes) => {
     const sizeInKB = bytes / 1024;
     const sizeInMB = bytes / (1024 * 1024);
+    const sizeInGB = bytes / (1024 * 1024 * 1024);
 
-    if (sizeInMB >= 1) {
+    if (sizeInGB >= 1) {
+      return sizeInGB.toFixed(2) + " gb";
+    } else if (sizeInMB >= 1) {
       return sizeInMB.toFixed(2) + " mb";
     } else {
       return sizeInKB.toFixed(2) + " kb";
@@ -94,31 +96,46 @@ const Message = ({ message }) => {
   };
 
   useEffect(() => {
-    const getFileSize = async (id) => {
+    const getFileSize = async (filename) => {
       try {
-        const fileRef = storageRef(storage, id);
+        const fileRef = storageRef(storage, filename);
         const metadata = await getMetadata(fileRef);
         const size = formatFileSize(metadata.size);
         setFileSize(size);
       } catch (error) {
-        console.error("Error getting metadata(size):", error);
+        console.error(error);
       }
     };
-    getFileSize(message.id);
-  }, [message.id]);
+    getFileSize(message.fileName);
+  }, [message.fileName]);
+
+  const changeDownloadStatus = async (message) => {
+    const chatDocRef = doc(db, "chats", data.chatId);
+    const chatDoc = await getDoc(chatDocRef);
+
+    if (chatDoc.exists()) {
+      const messages = chatDoc.data().messages;
+      const updatedMessages = messages.map((msg) => {
+        if (msg.id === message.id) {
+          return {
+            ...msg,
+            downloaded: true,
+          };
+        }
+        return msg;
+      });
+      await updateDoc(chatDocRef, { messages: updatedMessages });
+    }
+  };
 
   return (
     <>
       {message?.senderId === currentUser.uid ? (
         <div ref={ref} className="flex flex-row-reverse mb-2">
-          <div
-            onMouseOver={() => setselected(true)}
-            onMouseLeave={() => setselected(false)}
-            className="flex flex-row-reverse max-w-[90%] lg:max-w-[60%]"
-          >
+          <div className="flex flex-row-reverse max-w-[90%] lg:max-w-[60%]">
             <img
               src={currentUser?.photoURL || avatar}
-              alt="avatar"
+              alt={avatar}
               onClick={openFullScreen}
               className=" w-10 h-10 rounded-full"
             />
@@ -154,10 +171,12 @@ const Message = ({ message }) => {
               ) : (
                 // Only File except Image
                 <div className="flex flex-col my-2 justify-items-end">
-                  <a href={message.file} download={message.fileName}>
-                    <div className="flex justify-items-end items-center text-white bg-blue-400 pl-2 w-72 pr-4 py-2 m-1 rounded">
-                      <IoMdDocument className="w-9 h-9 m-1" />
-                      <div className="flex flex-col truncate">
+                  <a href={message.file} download={message.file}>
+                    <div className=" flex justify-items-end gap-1 items-center text-white bg-blue-400 p-2 w-64 md:w-72 m-1 rounded">
+                      <span>
+                        <IoMdDocument className="w-7 h-7 m-1" />
+                      </span>
+                      <div className="flex flex-col truncate flex-1">
                         <span className="font-semibold truncate">
                           {message.fileName}
                         </span>
@@ -198,9 +217,9 @@ const Message = ({ message }) => {
                 <div className="flex flex-col my-2">
                   <div className="flex flex-col m-1 p-1 bg-blue-400 rounded text-white">
                     <a href={message.file} download={message.fileName}>
-                      <div className="flex justify-items-end items-center p-2 w-72 rounded bg-blue-500">
-                        <IoMdDocument className="w-9 h-9 m-1" />
-                        <div className="flex flex-col truncate">
+                      <div className="flex justify-items-end items-center p-2 w-64 md:w-72 rounded bg-blue-500">
+                        <IoMdDocument className="w-7 h-7 m-1" />
+                        <div className="flex flex-col truncate flex-1">
                           <span className="font-semibold truncate">
                             {message.fileName}
                           </span>
@@ -210,7 +229,7 @@ const Message = ({ message }) => {
                         </div>
                       </div>
                     </a>
-                    <p className="flex justify-start flex-wrap break-words w-72 mr-auto p-1 rounded-none">
+                    <p className="flex justify-start flex-wrap break-words w-64 md:w-72 mr-auto p-1 rounded-none">
                       {message.text}
                     </p>
                   </div>
@@ -219,12 +238,10 @@ const Message = ({ message }) => {
                   </span>
                 </div>
               ))}
-            {selected && (
               <MdDelete
                 className=" text-blue-500 mr-1 mt-3 cursor-pointer"
                 onClick={() => deleteMessage(message)}
               />
-            )}
           </div>
         </div>
       ) : (
@@ -233,7 +250,7 @@ const Message = ({ message }) => {
           className="flex flex-row mb-2 max-w-[90%] lg:max-w-[60%]"
         >
           <img
-            src={data.user?.photoURL}
+            src={data.user?.photoURL || avatar}
             alt={avatar}
             className="w-10 h-10 rounded-full"
           />
@@ -270,9 +287,14 @@ const Message = ({ message }) => {
               // only file except image
               <div className="flex flex-col my-2">
                 <a href={message.file} download={message.fileName}>
-                  <div className="flex justify-items-end items-center bg-white pl-2 pr-4 py-2 m-1 w-72 rounded">
-                    <IoMdDocument className="w-9 h-9 m-1" />
-                    <div className="flex flex-col truncate">
+                  <div
+                    onClick={() => changeDownloadStatus(message)}
+                    className="flex justify-items-end gap-1 items-center bg-white p-2 m-1 w-64 md:w-72 rounded"
+                  >
+                    <span>
+                      <IoMdDocument className="w-7 h-7 m-1" />
+                    </span>
+                    <div className="flex flex-col truncate flex-1">
                       <span className="font-semibold truncate">
                         {message.fileName}
                       </span>
@@ -280,6 +302,11 @@ const Message = ({ message }) => {
                         {fileSize} , {extractFileType(message.fileName)}
                       </span>
                     </div>
+                    {!message.downloaded && (
+                      <span className="w-fit">
+                        <MdFileDownload className=" w-7 h-7 m-1" />
+                      </span>
+                    )}
                   </div>
                 </a>
                 <span className="flex text-xs justify-end my-1 text-gray-500">
@@ -300,7 +327,7 @@ const Message = ({ message }) => {
                     alt="Message"
                     className="w-64 h-72 m-0.5 rounded-md cursor-pointer"
                   />
-                  <p className="flex justify-start break-words bg-white w-64 mr-auto text-black p-1 rounded-b-lg rounded-tl-none rounded-tr-lg ">
+                  <p className="flex justify-start flex-wrap break-words bg-white w-64 mr-auto text-black p-1 rounded-none ">
                     {message.text}
                   </p>
                 </div>
@@ -311,11 +338,14 @@ const Message = ({ message }) => {
             ) : (
               // both file and text
               <div className="flex flex-col my-2">
-                <div className="flex flex-col justify-items-end bg-white p-1 m-1 rounded ">
+                <div
+                  onClick={() => changeDownloadStatus(message)}
+                  className="flex flex-col justify-items-end bg-white p-1 m-1 rounded "
+                >
                   <a href={message.file} download={message.fileName}>
-                    <div className="flex justify-items-end items-center p-2 rounded w-72 bg-gray-300">
-                      <IoMdDocument className="w-9 h-9 m-1" />
-                      <div className="flex flex-col truncate">
+                    <div className="flex justify-items-end items-center p-2 rounded w-64 md:w-72 bg-gray-300">
+                      <IoMdDocument className="w-7 h-7 m-1" />
+                      <div className="flex flex-col truncate flex-1">
                         <span className="font-semibold truncate">
                           {message.fileName}
                         </span>
@@ -323,9 +353,14 @@ const Message = ({ message }) => {
                           {fileSize} , {extractFileType(message.fileName)}
                         </span>
                       </div>
+                      {!message.downloaded && (
+                        <div className="w-fit">
+                          <MdFileDownload className=" w-7 h-7 m-1" />
+                        </div>
+                      )}
                     </div>
                   </a>
-                  <p className="flex justify-start break-words w-72 mr-auto text-black p-1 rounded-b-lg rounded-tl-none rounded-tr-lg ">
+                  <p className="flex justify-start flex-wrap break-words w-64 md:w-72 mr-auto text-black p-1 rounded-none ">
                     {message.text}
                   </p>
                 </div>

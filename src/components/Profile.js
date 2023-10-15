@@ -2,18 +2,19 @@ import React, { useContext, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 import { AuthContext } from "../context/AuthContext";
 import { auth, db, storage } from "../firebase";
-import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { doc, updateDoc, getDocs, collection } from "firebase/firestore";
+import {deleteObject,getDownloadURL,ref,uploadBytesResumable} from "firebase/storage";
+import {doc,updateDoc,getDocs,collection,deleteField,getDoc} from "firebase/firestore";
 import avatar from "../images/avatar.png";
 import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 const Profile = (props) => {
-  const { setisProfileOpen, setIsDropdownOpen } = props;
   const navigate = useNavigate();
+  const { setisProfileOpen, setIsDropdownOpen } = props;
   const { currentUser } = useContext(AuthContext);
   const [updateError, setUpdateError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [oldDisplayName, setOldDisplayName] = useState(currentUser.oldUserName || currentUser.displayName);
   const [updatedDisplayName, setUpdatedDisplayName] = useState(currentUser.displayName);
   const [updatedProfileImage, setUpdatedProfileImage] = useState(null);
   const [updatedEmail, setUpdatedEmail] = useState(currentUser.email);
@@ -23,7 +24,7 @@ const Profile = (props) => {
     document.getElementById("dp")?.requestFullscreen();
   };
 
-  const updateProfileForOthers = async () => {
+  const updateProfileForOthers = async (photoUrl) => {
     const q = collection(db, "userChats");
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach(async (document) => {
@@ -35,7 +36,10 @@ const Profile = (props) => {
           const updatedData = {
             [`${fieldId}.userInfo.uid`]: currentUser.uid,
             [`${fieldId}.userInfo.displayName`]: updatedDisplayName,
-            [`${fieldId}.userInfo.photoURL`]: updatedProfileImage ? updatedProfileImage : currentUser.photoURL };
+            [`${fieldId}.userInfo.photoURL`]: updatedProfileImage
+              ? photoUrl
+              : currentUser.photoURL,
+          };
           await updateDoc(doc(db, "userChats", document.id), updatedData);
         }
       });
@@ -45,6 +49,12 @@ const Profile = (props) => {
   const handleUpdateProfile = async () => {
     try {
       const currentUserRef = doc(db, "users", currentUser.uid);
+      const userDoc = await getDoc(currentUserRef);
+      const userData = userDoc.data();
+      const oldName = userData.oldUserName || userData.displayName;
+      setOldDisplayName(oldName)
+      const newName = updatedDisplayName;
+
       // Email is updated
       if (updatedEmail !== currentUser.email) {
         await updateEmail(auth.currentUser, updatedEmail);
@@ -56,51 +66,54 @@ const Profile = (props) => {
       if (updatedPassword) {
         await updatePassword(auth.currentUser, updatedPassword);
       }
-      // Only Display name has changed
-      if ( !updatedProfileImage && updatedDisplayName !== currentUser.displayName ) {
+      // Only Display name is updated
+      if (!updatedProfileImage && updatedDisplayName !== oldName) {
         await updateProfile(auth.currentUser, {
           displayName: updatedDisplayName,
         });
         await updateDoc(currentUserRef, {
           displayName: updatedDisplayName,
+          oldUserName: userData.oldUserName || oldName,
         });
         updateProfileForOthers();
       }
-      // Update the profile image with/without display name
+      // Update the profile image with/without updating display name
       else if (updatedProfileImage) {
-        const oldStorageRef = ref(storage, currentUser.displayName);
+        const oldStorageRef = ref(storage, oldName);
         if (oldStorageRef) {
-          deleteObject(oldStorageRef);
-        } else {
-          console.log(`Old Image Reference Not Found`);
+          await deleteObject(oldStorageRef);
+          const newStorageRef = ref(storage, newName);
+          const uploadTask = uploadBytesResumable( newStorageRef, updatedProfileImage);
+          uploadTask.on(
+            (error) => {
+              console.log(error.message);
+              setUpdateError("Failed to upload new avatar");
+            },
+            () => {
+              getDownloadURL(uploadTask.snapshot.ref).then(
+                async (downloadURL) => {
+                  await updateProfile(auth.currentUser, {
+                    displayName: newName,
+                    photoURL: downloadURL,
+                  });
+                  await updateDoc(currentUserRef, {
+                    displayName: newName,
+                    photoURL: downloadURL,
+                    oldUserName: deleteField(),
+                  });
+                  updateProfileForOthers(downloadURL);
+                }
+              );
+            }
+          );
         }
-        const newStorageRef = ref(storage, updatedDisplayName);
-        const uploadTask = uploadBytesResumable( newStorageRef, updatedProfileImage);
-        uploadTask.on(
-          (error) => {
-            console.log(error.message);
-            setUpdateError("Failed to upload new avatar");
-          },
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
-              await updateProfile(auth.currentUser, {
-                displayName: updatedDisplayName,
-                photoURL: downloadURL,
-              });
-              await updateDoc(currentUserRef, {
-                displayName: updatedDisplayName,
-                photoURL: downloadURL,
-              });
-            });
-          }
-        );
-        updateProfileForOthers();
       }
       closeProfile();
       navigate("/");
     } catch (error) {
       console.log(error.message);
-      setUpdateError("Failed to update profile !");
+      if (error.code === "auth/requires-recent-login")
+        setUpdateError("Email update requires recent login!");
     }
   };
 
@@ -164,7 +177,9 @@ const Profile = (props) => {
               minLength={3}
             />
           ) : (
-            <p className="text-gray-300 text-lg pl-2">{currentUser.displayName}</p>
+            <p className="text-gray-300 text-lg pl-2">
+              {currentUser.displayName}
+            </p>
           )}
         </div>
         <div className="flex flex-col justify-start ml-5 mb-3">

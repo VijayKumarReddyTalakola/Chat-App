@@ -71,7 +71,8 @@ const Input = () => {
     if (text.trim() !== "") newMessage.text = text;
 
     if (file) {
-      const storageRef = ref(storage, messageId);
+      const fileName = file.name;
+      const storageRef = ref(storage, fileName);
       const uploadTask = uploadBytesResumable(storageRef, file);
       uploadTask.on(
         (err) => console.log(err),
@@ -79,6 +80,7 @@ const Input = () => {
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
             newMessage.file = downloadURL;
             newMessage.fileName = file.name;
+            newMessage.downloaded = false;
             checkMessageExists(newMessage);
           });
         }
@@ -107,11 +109,10 @@ const Input = () => {
           onChange={(e) => setText(e.target.value)}
           placeholder="Type a message..."
           value={text}
-          className="w-full outline-none my-3 bg-gray-50 text-gray-600"
+          className="w-full outline-none my-3 bg-gray-50 text-gray-700"
         />
         <input
           type="file"
-          onKeyDown={(e) => e.code === "Enter" && sendMessage()}
           onChange={(e) => setFile(e.target.files[0])}
           id="fileupload"
           className="invisible w-1 h-1"

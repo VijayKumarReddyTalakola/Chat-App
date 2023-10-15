@@ -8,9 +8,8 @@ import { MdBlock, MdPhoto } from "react-icons/md";
 import avatar from "../images/avatar.png";
 import { IoMdDocument } from "react-icons/io";
 
-
 const Chats = () => {
-const validImageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "tiff", "bmp"];
+  const validImageExtensions = [ "jpg", "jpeg", "png", "gif", "webp", "tiff", "bmp" ];
   const [chats, setChats] = useState([]);
   const { currentUser } = useContext(AuthContext);
   const { dispatch } = useContext(ChatContext);
@@ -53,43 +52,58 @@ const validImageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "tiff", "bmp"
     if (lastMessage) {
       if (lastMessage.deleted) {
         return (
-          <div className="flex items-center truncate">
+          <div className="flex items-center">
             <MdBlock className="text-gray-300" />
-            <p className="text-gray-300 ml-1 md:text-xs xl:text-base flex-1">Last message was deleted</p>
+            <p className="text-gray-300 ml-1 md:text-xs xl:text-base flex-1">
+              Last message was deleted
+            </p>
           </div>
         );
       } else {
-        const isImage = validImageExtensions.some(ext => lastMessage?.file?.toLowerCase().endsWith(ext));
-        if (lastMessage.text && !lastMessage.file) { // only text
-          return (
-            <p className="text-gray-300 truncate">{lastMessage.text}</p>
-          );
-        } else if (lastMessage.file && !lastMessage.text && isImage) { // only image
+        const isImage = validImageExtensions.some((ext) =>
+          lastMessage?.file?.toLowerCase().endsWith(ext)
+        );
+        if (lastMessage.text && !lastMessage.file) {
+          // only text
+          return <p className="text-gray-300 truncate">{lastMessage.text}</p>;
+        } else if (lastMessage.file && !lastMessage.text && isImage) {
+          // only image
           return (
             <div className="flex items-center truncate">
               <MdPhoto className="bg-transparent" />
-              <p className="text-gray-300 ml-1 truncate">{lastMessage.file}</p>
+              <p className="text-gray-300 ml-1 truncate flex-1">
+                {lastMessage.file}
+              </p>
             </div>
           );
-        } else if (lastMessage.file && !lastMessage.text && !isImage) { // only file except image
+        } else if (lastMessage.file && !lastMessage.text && !isImage) {
+          // only file except image
           return (
             <div className="flex items-center truncate ">
               <IoMdDocument className="bg-transparent text-white" />
-              <p className="text-gray-300 ml-1 truncate">{lastMessage.file}</p>
+              <p className="text-gray-300 ml-1 truncate flex-1">
+                {lastMessage.file}
+              </p>
             </div>
           );
-        } else if (lastMessage.file && lastMessage.text && isImage) { // both image and text
+        } else if (lastMessage.file && lastMessage.text && isImage) {
+          // both image and text
           return (
             <div className="flex items-center truncate">
               <MdPhoto className="bg-transparent text-white" />
-              <p className="text-gray-300 ml-1 truncate">{lastMessage.text}</p>
+              <p className="text-gray-300 ml-1 truncate flex-1">
+                {lastMessage.text}
+              </p>
             </div>
           );
-        } else if (lastMessage.file && lastMessage.text && !isImage) { // both file and text
+        } else if (lastMessage.file && lastMessage.text && !isImage) {
+          // both file and text
           return (
-            <div className="flex items-center  truncate">
+            <div className="flex items-center truncate ">
               <IoMdDocument className="bg-transparent text-white" />
-              <p className="text-gray-300 ml-1 truncate">{lastMessage.text}</p>
+              <p className="text-gray-300 ml-1 truncate flex-1">
+                {lastMessage.text}
+              </p>
             </div>
           );
         }
@@ -120,7 +134,9 @@ const validImageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "tiff", "bmp"
                 <div className="flex flex-col gap-y-1 flex-1 overflow-hidden">
                   <div className="flex items-center justify-between ">
                     <span className="font-bold text-white text-lg md:font-medium lg:text-base xl:text-lg truncate">
-                      { chat[1].userInfo?.uid === currentUser.uid ? (chat[1].userInfo?.displayName)+' (You)' : chat[1].userInfo?.displayName} 
+                      {chat[1].userInfo?.uid === currentUser.uid
+                        ? chat[1].userInfo?.displayName + " (You)"
+                        : chat[1].userInfo?.displayName}
                     </span>
                     <span className="text-gray-300 md:text-sm flex justify-items-end">
                       {getTimeOrDateFromTimestamp(chat[1].date)}
@@ -128,7 +144,7 @@ const validImageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "tiff", "bmp"
                   </div>
                   {chat[1].lastMessage && (
                     <span className="flex w-full text-gray-300 md:text-sm xl:text-base truncate">
-                        {renderLastMessage(chat[1].lastMessage)}
+                      {renderLastMessage(chat[1].lastMessage)}
                     </span>
                   )}
                 </div>
